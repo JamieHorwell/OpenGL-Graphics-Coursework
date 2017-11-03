@@ -8,6 +8,12 @@ in Vertex {
 out vec4 FragColor;
 
 void main(void){
-	FragColor = texture(diffuseTex, IN.texCoord);
+	vec4 value = texture(diffuseTex, IN.texCoord).rgba;
+	
+	if(value.a == 0.0) {
+	discard;
+	}
+
+	FragColor = value;
 	//FragColor = vec4(1,1,1,1);
 }

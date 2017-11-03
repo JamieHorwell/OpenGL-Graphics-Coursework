@@ -8,8 +8,7 @@ int main()	{
 	if(!w.HasInitialised()) {				//This shouldn't happen!
 		return -1;
 	}
-
-	Renderer renderer(w);					//This handles all the boring OGL 3.2 stuff, and sets up our tutorial!
+		Renderer renderer(w);					//This handles all the boring OGL 3.2 stuff, and sets up our tutorial!
 	if(!renderer.HasInitialised()) {		//This shouldn't happen!
 		return -1;
 	}
