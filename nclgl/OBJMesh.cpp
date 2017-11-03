@@ -1,5 +1,5 @@
 #include "OBJMesh.h"
-#ifdef WEEK_2_CODE
+
 /*
 OBJ files look generally something like this:
 
@@ -372,4 +372,3 @@ void	OBJMesh::FixTextures(MTLInfo &info) {
 		info.bumpNum = SOIL_load_OGL_texture(string(TEXTUREDIR + info.bump).c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y |  SOIL_FLAG_TEXTURE_REPEATS);
 	}
 }
-#endif

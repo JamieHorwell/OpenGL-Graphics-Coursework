@@ -18,7 +18,7 @@ _-_-_-_-_-_-_-""  ""
 
 *//////////////////////////////////////////////////////////////////////////////
 #include "common.h"
-#ifdef WEEK_2_CODE
+
 #pragma once
 
 #include "Mesh.h"
@@ -42,4 +42,3 @@ protected:
 	std::vector<Mesh*>children;
 	ChildMeshInterface(void){};
 };
-#endif
