@@ -52,6 +52,7 @@ void Shader::SetDefaultAttributes()
 	//bind vertex attributes c++ side to input variables in shader programs, do this by taking in shader object name, attribute index, and shader input variable name
 	glBindAttribLocation(program, VERTEX_BUFFER, "position");
 	glBindAttribLocation(program, COLOUR_BUFFER, "colour");
+	glBindAttribLocation(program, NORMAL_BUFFER, "normal");
 	glBindAttribLocation(program, TEXTURE_BUFFER, "texCoord");
 }
 

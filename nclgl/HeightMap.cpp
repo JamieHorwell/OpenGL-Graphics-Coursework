@@ -53,6 +53,7 @@ HeightMap::HeightMap(std::string name)
 		}
 	}
 
+	GenerateNormals();
 	BufferData();
 }
 

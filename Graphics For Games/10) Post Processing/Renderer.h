@@ -23,7 +23,7 @@ protected:
 	void DrawScene();
 
 	Shader* sceneShader;
-	Shader* combineShader;
+	Shader* processShader;
 
 	Camera* camera;
 
@@ -32,5 +32,7 @@ protected:
 
 	GLuint bufferFBO;
 	GLuint processFBO;
+	GLuint bufferColourTex[2];
+	GLuint bufferDepthTex;
 };
 
