@@ -19,8 +19,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	if (!currentShader->LinkProgram()) {
 		return;
 	}
-	usingDepth = false;
-	usingAlpha = false;
+	usingDepth = true;
+	usingAlpha = true;
 	blendMode = 0;
 	modifyObject = true;
 
@@ -65,17 +65,19 @@ void Renderer::MoveObject(float by) {
 
 void Renderer::ToggleDepth() {
 	usingDepth = !usingDepth;
+	std::cout << "DEPTH" << usingDepth << endl;
 	usingDepth ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
 }
 
 void Renderer::ToggleAlphaBlend() {
 	usingAlpha = !usingAlpha;
+	std::cout << "ALPHA:" << usingAlpha << endl;
 	usingAlpha ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
 }
 
 void Renderer::ToggleBlendMode() {
 	blendMode = (blendMode + 1)%4;
-
+	std::cout << blendMode;
 	switch (blendMode) {
 		 case (0) : glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); break;
 		 case (1) : glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR); break;

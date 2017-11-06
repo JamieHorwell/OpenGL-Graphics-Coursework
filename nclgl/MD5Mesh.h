@@ -30,8 +30,7 @@ _-_-_-_-_-_-_-""  ""
 
 *//////////////////////////////////////////////////////////////////////////////
 #include "common.h"
-#ifdef USE_MD5MESH
-#ifdef WEEK_2_CODE
+
 #pragma once
 
 /*
@@ -53,7 +52,7 @@ accessed via the sampling functionality in a shader. This tends to be significan
 than performing everything on the GPU. 
 */
 
-#define MD5_USE_HARDWARE_SKINNING
+//#define MD5_USE_HARDWARE_SKINNING
 
 #include <fstream>
 #include <string>
@@ -129,5 +128,3 @@ protected:
 
 	const MD5FileData &	type;
 };
-#endif
-#endif

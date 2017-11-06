@@ -1,6 +1,5 @@
 #include "MD5Mesh.h"
-#ifdef USE_MD5MESH
-#ifdef WEEK_2_CODE
+
 MD5Mesh::MD5Mesh(const MD5FileData&t) :  type(t) {
 #ifdef MD5_USE_HARDWARE_SKINNING
 	weightObject = 0;
@@ -177,5 +176,3 @@ void MD5Mesh::RebufferData()	{
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, numVertices*sizeof(unsigned int), (void*)indices);
 	}
 }
-#endif
-#endif

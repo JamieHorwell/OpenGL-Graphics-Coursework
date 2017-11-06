@@ -2,14 +2,6 @@
 
 
 
-Plane::Plane()
-{
-}
-
-
-Plane::~Plane()
-{
-}
 
 Plane::Plane(const Vector3 & normal, float distance, bool normalise)
 {

@@ -16,6 +16,8 @@ Mesh::Mesh()
 	texture = 0;
 	textureCoords = NULL;
 	type = GL_TRIANGLES;
+	indices = NULL;
+	numIndices = 0;
 }
 
 
@@ -28,6 +30,7 @@ Mesh::~Mesh()
 	delete[]vertices;
 	delete[]colours;
 	delete[]textureCoords;
+	delete[]indices;
 
 }
 
@@ -38,7 +41,12 @@ void Mesh::Draw()
 	//bind our VAO again
 	glBindVertexArray(arrayObject);
 	//type of primitive to draw, first vertex to draw from, how many vertices to draw
-	glDrawArrays(type, 0, numVertices);
+	if (bufferObject[INDEX_BUFFER]) {
+		glDrawElements(type, numIndices, GL_UNSIGNED_INT, 0);
+	}
+	else {
+		glDrawArrays(type, 0, numVertices);
+	}
 	//unbind VAO
 	glBindVertexArray(0);
 	//unbind Texture
@@ -123,8 +131,6 @@ void Mesh::BufferData()
 		glVertexAttribPointer(TEXTURE_BUFFER, 2, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(TEXTURE_BUFFER);
 	}
-
-
 	//now do the same for colours
 	if (colours) {
 		glGenBuffers(1, &bufferObject[COLOUR_BUFFER]);
@@ -133,5 +139,13 @@ void Mesh::BufferData()
 		glVertexAttribPointer(COLOUR_BUFFER, 4, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(COLOUR_BUFFER);
 	}
+	if (indices) {
+		glGenBuffers(1, &bufferObject[INDEX_BUFFER]);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject[INDEX_BUFFER]);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(GLuint),indices,GL_STATIC_DRAW);
+		
+	}
+
+
 	glBindVertexArray(0);
 }

@@ -5,6 +5,7 @@
 #include "../../nclgl/SceneNode.h"
 #include "../../nclgl/Frustum.h"
 #include "../../nclgl/CubeRobot.h"
+#include "../../nclgl/HeightMap.h"
 
 #include <algorithm>
 
@@ -26,6 +27,7 @@ protected:
 	SceneNode* root;
 	Camera* camera;
 	Mesh* quad;
+	HeightMap* terrain;
 
 	Frustum frameFrustum;
 

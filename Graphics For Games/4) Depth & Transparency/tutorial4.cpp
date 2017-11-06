@@ -28,10 +28,10 @@ int main()	{
 		}
 
 		if(Window::GetKeyboard()->KeyDown(KEYBOARD_UP)) {
-			renderer.MoveObject(0.1f);
+			renderer.MoveObject(0.01f);
 		}
 		if(Window::GetKeyboard()->KeyDown(KEYBOARD_DOWN)) {
-			renderer.MoveObject(-0.1f);
+			renderer.MoveObject(-0.01f);
 		}
 
 		renderer.RenderScene();

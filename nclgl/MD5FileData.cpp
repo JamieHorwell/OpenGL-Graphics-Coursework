@@ -1,6 +1,5 @@
 #include "MD5FileData.h"
-#ifdef USE_MD5MESH
-#ifdef WEEK_2_CODE
+
 /*
 http://www.modwiki.net/wiki/MD5MESH_%28file_format%29
 */
@@ -634,5 +633,3 @@ int			MD5FileData::GetIndexForJointName(const string &name) const {
 	}
 	return -1;
 }
-#endif
-#endif

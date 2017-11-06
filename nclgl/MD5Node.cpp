@@ -1,6 +1,5 @@
 #include "MD5Node.h"
-#ifdef USE_MD5MESH
-#ifdef WEEK_2_CODE
+
 MD5Node::MD5Node(const MD5FileData &ofType) : sourceData(ofType)	{
 	currentAnim		 = NULL;
 	frameTime		 = 0.0f;
@@ -355,5 +354,3 @@ void	MD5Node::DebugDrawJointTransforms(float size, bool worldSpace) {
 	delete[]skeletonVertices;
 	delete[]skeletonColours;
 }
-#endif
-#endif

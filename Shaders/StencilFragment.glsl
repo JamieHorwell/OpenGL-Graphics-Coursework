@@ -15,5 +15,6 @@ void main(void){
 	}
 
 	FragColor = value;
+	
 	//FragColor = vec4(1,1,1,1);
 }

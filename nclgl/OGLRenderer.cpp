@@ -172,7 +172,7 @@ OGLRenderer::~OGLRenderer(void)	{
 Returns TRUE if everything in the constructor has gone to plan.
 Check this to end the application if necessary...
 */
-bool OGLRenderer::HasInitialised() const{
+	bool OGLRenderer::HasInitialised() const{
 	return init;
 }
 

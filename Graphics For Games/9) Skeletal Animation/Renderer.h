@@ -5,7 +5,7 @@
 #include "../../nclgl/MD5Mesh.h"
 #include "../../nclgl/MD5Node.h"
 
-class Renderer : public OGLRenderer		{
+class Renderer : public OGLRenderer {
 public:
 	Renderer(Window &parent);
 	virtual ~Renderer(void);

@@ -1,6 +1,5 @@
 #include "MD5Anim.h"
-#ifdef USE_MD5MESH
-#ifdef WEEK_2_CODE
+
 MD5Anim::MD5Anim(std::string filename)	{
 	numAnimatedComponents = 0;
 	frameRate	= 0;
@@ -409,5 +408,3 @@ void	MD5Anim::TransformSkeleton(MD5Skeleton &skel, unsigned int frameNum) {
 		}
 	}
 }
-#endif
-#endif

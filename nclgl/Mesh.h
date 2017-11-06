@@ -2,7 +2,7 @@
 #include "OGLRenderer.h"
 
 enum MeshBuffer {
-	VERTEX_BUFFER, COLOUR_BUFFER, TEXTURE_BUFFER, MAX_BUFFER
+	VERTEX_BUFFER, COLOUR_BUFFER, TEXTURE_BUFFER, INDEX_BUFFER, MAX_BUFFER
 };
 
 class Mesh
@@ -27,10 +27,12 @@ protected:
 	//buffer objects store an array of unformatted memory allocated by OpenGL context, used to store the vertex data, we store all the properties up to MAX_BUFFER
 	GLuint bufferObject[MAX_BUFFER];
 	GLuint numVertices;
+	GLuint numIndices;
 	GLuint type;
 
 	Vector3* vertices;
 	Vector4* colours;
+	unsigned int* indices;
 
 	//texture info
 	GLuint texture;
