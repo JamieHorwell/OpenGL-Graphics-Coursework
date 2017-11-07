@@ -20,6 +20,7 @@ public:
 
 protected:
 	void BufferData();
+	//rebuffer data
 	void GenerateNormals();
 
 
