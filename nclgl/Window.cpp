@@ -28,24 +28,24 @@ Window::Window(std::string title, int sizeX, int sizeY, bool fullScreen)	{
 
 
 //This creates the console window
-	AllocConsole();
+	//AllocConsole();
 
-	int consoleHandle;	
-	long stdHandle;
-	FILE *file;	
+	//int consoleHandle;	
+	//long stdHandle;
+	//FILE *file;	
 
-	// redirect stdout
-	stdHandle		= (long)GetStdHandle(STD_OUTPUT_HANDLE);	
-	consoleHandle	= _open_osfhandle(stdHandle, _O_TEXT);
-	file	= _fdopen( consoleHandle, "w" );
-	*stdout = *file;
-	setvbuf( stdout, NULL, _IONBF, 0 );
+	//// redirect stdout
+	//stdHandle		= (long)GetStdHandle(STD_OUTPUT_HANDLE);	
+	//consoleHandle	= _open_osfhandle(stdHandle, _O_TEXT);
+	//file	= _fdopen( consoleHandle, "w" );
+	//*stdout = *file;
+	//setvbuf( stdout, NULL, _IONBF, 0 );
 
-	// redirect stdin
-	stdHandle	= (long)GetStdHandle(STD_INPUT_HANDLE);
-	file		= _fdopen( consoleHandle, "r" );
-	*stdin = *file;
-	setvbuf( stdin, NULL, _IONBF, 0 );
+	//// redirect stdin
+	//stdHandle	= (long)GetStdHandle(STD_INPUT_HANDLE);
+	//file		= _fdopen( consoleHandle, "r" );
+	//*stdin = *file;
+	//setvbuf( stdin, NULL, _IONBF, 0 );
 //
 
 	WNDCLASSEX windowClass;
@@ -131,7 +131,7 @@ Window::~Window(void)
 	delete keyboard;keyboard = NULL;
 	delete mouse;	mouse = NULL;
 
-	FreeConsole();		//Destroy the console window
+	//FreeConsole();		//Destroy the console window
 }
 
 HWND Window::GetHandle() {

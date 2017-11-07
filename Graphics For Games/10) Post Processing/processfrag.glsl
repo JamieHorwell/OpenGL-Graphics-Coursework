@@ -1,13 +1,12 @@
 #version 150
 
-
 uniform sampler2D diffuseTex;
 uniform vec2 pixelSize;
 uniform int isVertical;
 
 in Vertex {
 	vec2 texCoord;
-	vec4 colour;
+	//vec4 colour;
 } IN;
 
 out vec4 FragColor;

@@ -2,7 +2,7 @@
 #include "OGLRenderer.h"
 
 enum MeshBuffer {
-	VERTEX_BUFFER, COLOUR_BUFFER, TEXTURE_BUFFER, NORMAL_BUFFER, INDEX_BUFFER, MAX_BUFFER
+	VERTEX_BUFFER, COLOUR_BUFFER, TEXTURE_BUFFER, NORMAL_BUFFER, TANGENT_BUFFER, INDEX_BUFFER, MAX_BUFFER
 };
 
 class Mesh
@@ -18,10 +18,16 @@ public:
 	void SetTexture(GLuint tex) { texture = tex; };
 	GLuint GetTexture() { return texture; };
 
+	void SetBumpMap(GLuint tex) { bumpTexture = tex; };
+	GLuint GetBumpMap() { return bumpTexture; };
+
+
 protected:
 	void BufferData();
 	//rebuffer data
 	void GenerateNormals();
+	void GenerateTangents();
+	Vector3 GenerateTangent(const Vector3 &a, const Vector3 &b, const Vector3 &c, const Vector2 &ta, const Vector2 &tb, const Vector2 &tc);
 
 
 	//VAO stores state needed to supply vertex data, stores format of vertex data as well as buffer objects providing the vertex data arrays
@@ -39,7 +45,11 @@ protected:
 
 	//texture info
 	GLuint texture;
+	GLuint bumpTexture;
 	Vector2* textureCoords;
+
 	Vector3* normals;
+	Vector3* tangents;
+
 };
 

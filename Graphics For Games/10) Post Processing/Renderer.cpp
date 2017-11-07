@@ -5,6 +5,7 @@
 Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 {
 	camera = new Camera(0.0f,135.0f,Vector3(0,500,0));
+
 	quad = Mesh::GenerateQuad();
 
 	heightMap = new HeightMap(TEXTUREDIR"terrain.raw");
@@ -12,14 +13,13 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	sceneShader = new Shader(SHADERDIR"TexturedVertex.glsl",SHADERDIR"TexturedFragment.glsl");
 
-	processShader = new Shader(SHADERDIR"TexturedVertex","processfrag.glsl");
+	processShader = new Shader(SHADERDIR"TexturedVertex.glsl","processfrag.glsl");
 
 	if (!processShader->LinkProgram() || !sceneShader->LinkProgram() || !heightMap->GetTexture()) {
 		return;
 	}
 
 	SetTextureRepeating(heightMap->GetTexture(),true);
-
 
 	//generate 3 textures, depth texture, two colour textures to use as attachments for our FBOs
 	glGenTextures(1, &bufferDepthTex);
@@ -75,14 +75,14 @@ Renderer::~Renderer()
 	delete processShader;
 	currentShader = NULL;
 
-	delete heightMap;
-	delete quad;
-	delete camera;
-
 	glDeleteTextures(2, bufferColourTex);
 	glDeleteTextures(1, &bufferDepthTex);
 	glDeleteFramebuffers(1, &bufferFBO);
 	glDeleteFramebuffers(1, &processFBO);
+
+	delete heightMap;
+	delete quad;
+	delete camera;
 }
 
 void Renderer::UpdateScene(float msec) {
