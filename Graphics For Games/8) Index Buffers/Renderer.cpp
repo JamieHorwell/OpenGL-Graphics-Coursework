@@ -49,7 +49,7 @@ void Renderer::RenderScene() {
 	glUseProgram(currentShader->GetProgram());
 	UpdateShaderMatrices();
 
-	//glUniform1i(glGetUniformLocation(currentShader->GetProgram(),"diffuseTex"),0);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(),"diffuseTex"),0);
 
 	heightMap->Draw();
 	triangle->Draw();

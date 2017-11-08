@@ -32,7 +32,7 @@
  vec3 colour = ( diffuse.rgb * lightColour.rgb );
  colour += ( lightColour.rgb * sFactor ) * 0.33;
  FragColor = vec4 ( colour * atten * lambert , diffuse.a );
- FragColor.rgb += ( diffuse.rgb * lightColour.rgb ) * 0.1;
+ FragColor.rgb += ( diffuse.rgb * lightColour.rgb ) * 0.15;
  
  //first see if any colour appears
  //FragColor = vec4(1,0,0,1)

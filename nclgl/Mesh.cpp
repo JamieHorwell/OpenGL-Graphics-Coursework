@@ -64,6 +64,7 @@ void Mesh::Draw()
 	glBindVertexArray(0);
 	//unbind Texture
 	glBindTexture(GL_TEXTURE_2D, 0);
+
 }
 
 Mesh * Mesh::GenerateTriangle()

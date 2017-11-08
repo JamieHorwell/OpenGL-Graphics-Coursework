@@ -12,7 +12,7 @@ in Vertex {
 out vec4 FragColor;
 
 void main(void){
-	
+
 	FragColor = texture(cubeTex, normalize(IN.normal));
-	
+	//FragColor = vec4(1,0,1,1);
 }

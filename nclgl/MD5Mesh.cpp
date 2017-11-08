@@ -1,5 +1,8 @@
 #include "MD5Mesh.h"
 
+#define MD5_USE_NORMALS
+#define MD5_USE_TANGENTS_BUMPMAPS
+
 MD5Mesh::MD5Mesh(const MD5FileData&t) :  type(t) {
 #ifdef MD5_USE_HARDWARE_SKINNING
 	weightObject = 0;

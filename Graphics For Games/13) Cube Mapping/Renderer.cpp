@@ -2,13 +2,13 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	camera = new Camera();
-	heightMap = new HeightMap(TEXTUREDIR"terrain.raw");
+	heightMap = new HeightMap(TEXTUREDIR"landTest.raw");
 	quad = Mesh::GenerateQuad();
 
 	camera->SetPosition(Vector3(RAW_WIDTH*HEIGHTMAP_X / 2.0f,500.0f,RAW_WIDTH*HEIGHTMAP_X));
 
-	light = new Light(Vector3((RAW_HEIGHT*HEIGHTMAP_TEX_X / 2.0f), 500.0f, (RAW_HEIGHT*HEIGHTMAP_Z / 2.0f)), Vector4(1, 1, 1, 1), (RAW_WIDTH*HEIGHTMAP_TEX_X) / 2.0f);
-	light->SetRadius(10000);
+	light = new Light(Vector3((RAW_HEIGHT*HEIGHTMAP_TEX_X ), 500.0f, (RAW_HEIGHT*HEIGHTMAP_Z )), Vector4(1, 1, 1, 1), (RAW_WIDTH*HEIGHTMAP_TEX_X) / 2.0f);
+	light->SetRadius(120000);
 
 	reflectShader = new Shader(SHADERDIR"PerPixelVertex.glsl",SHADERDIR"reflectFragment.glsl");
 
@@ -20,7 +20,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 		return;
 	}
 
-	quad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"tongue.TGA",SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	quad->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lava.png",SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
 	heightMap->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
@@ -30,7 +30,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	cubeMap = SOIL_load_OGL_cubemap(TEXTUREDIR"rusted_west.jpg",TEXTUREDIR"rusted_east.jpg",TEXTUREDIR"rusted_up.jpg",TEXTUREDIR"rusted_down.jpg",TEXTUREDIR"rusted_south.jpg",TEXTUREDIR"rusted_north.jpg",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
-sa	if (!cubeMap || !quad->GetTexture() || !heightMap->GetTexture() || !heightMap->GetBumpMap()) {
+	if (!cubeMap || !quad->GetTexture() || !heightMap->GetTexture() || !heightMap->GetBumpMap()) {
 		return;
 	}
 
@@ -65,6 +65,7 @@ void Renderer::UpdateScene(float msec) {
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
 	waterRotate += msec / 1000.0f;
+	moveLight();
 }
 
 void Renderer::RenderScene() {
@@ -82,11 +83,21 @@ void Renderer::DrawSkybox() {
 	glDepthMask(GL_FALSE);
 	SetCurrentShader(skyboxShader);
 
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 2);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, cubeMap);
+	
 	UpdateShaderMatrices();
 	quad->Draw();
 
 	glUseProgram(0);
 	glDepthMask(GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Renderer::moveLight()
+{
+	this->light->SetPosition(light->GetPosition() + Vector3(10,0,10));
 }
 
 void Renderer::DrawHeightmap() {
@@ -120,7 +131,7 @@ void Renderer::DrawWater() {
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
 
 	float heightX = (RAW_WIDTH*HEIGHTMAP_X / 2.0f);
-	float heightY = 256 * HEIGHTMAP_Y / 3.0f;
+	float heightY = 200 * HEIGHTMAP_Y / 4.0f;
 	float heightZ = (RAW_HEIGHT*HEIGHTMAP_Z / 2.0f);
 
 
