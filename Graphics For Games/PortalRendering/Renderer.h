@@ -3,6 +3,7 @@
 #include "../../nclgl/OGLRenderer.h"
 #include "../../nclgl/Camera.h"
 #include "../../nclgl/HeightMap.h"
+#include"../../nclgl/SceneNode.h"
 
 class Renderer : public OGLRenderer {
 
@@ -18,6 +19,10 @@ protected:
 	void DrawWater();
 	void DrawSkybox();
 	void moveLight();
+	void DrawPortal();
+
+
+	void initPortal();
 
 	Shader* lightShader;
 	Shader* reflectShader;
@@ -25,6 +30,8 @@ protected:
 
 	HeightMap* heightMap;
 	Mesh* quad;
+
+	SceneNode* portalQuad;
 
 	Light* light;
 	Camera* camera;

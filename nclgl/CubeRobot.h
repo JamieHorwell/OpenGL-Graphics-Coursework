@@ -14,11 +14,15 @@ public:
 		OBJMesh * m = new OBJMesh();
 		m->LoadOBJMesh(MESHDIR"cube.obj");
 		cube = m;
+		OBJMesh* headObj = new OBJMesh();
+		headObj->LoadOBJMesh(MESHDIR"cube.obj");
+		headMesh = headObj;
 	}
 	static void DeleteCube() { delete cube; };
 
 protected:
 	static Mesh* cube;
+	static Mesh* headMesh;
 	SceneNode* head;
 	SceneNode*leftArm;
 	SceneNode* rightArm;

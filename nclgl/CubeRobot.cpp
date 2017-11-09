@@ -1,7 +1,7 @@
 #include "CubeRobot.h"
 
 Mesh * CubeRobot::cube = NULL;
-
+Mesh * CubeRobot::headMesh = NULL;
 CubeRobot::CubeRobot()
 {
 	SceneNode* body = new SceneNode(cube, Vector4(1, 0, 0, 1));
@@ -9,18 +9,21 @@ CubeRobot::CubeRobot()
 	body->SetTransform(Matrix4::Translation(Vector3(0, 35, 0)));
 	AddChild(body);
 
-	head = new SceneNode(cube, Vector4(0, 1, 0, 1));
-	head->SetModelScale(Vector3(5,5,5));
-	head->SetTransform(Matrix4::Translation(Vector3(0,60,0)));
+	head = new SceneNode(Mesh::GenerateQuad(), Vector4(0, 1, 0, 1));
+	head->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"gurp.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	head->GetMesh()->GetTexture();
+
+	head->SetModelScale(Vector3(18,18,18));
+	head->SetTransform(Matrix4::Translation(Vector3(0,40,0)));
 	body->AddChild(head);
 
 	leftArm = new SceneNode(cube, Vector4(0,0,1,1));
-	leftArm->SetModelScale(Vector3(3,-18,3));
+	leftArm->SetModelScale(Vector3(6,-18,6));
 	leftArm->SetTransform(Matrix4::Translation(Vector3(-12,30,-1)));
 	body->AddChild(leftArm);
 
 	rightArm = new SceneNode(cube, Vector4(0,0,1,1));
-	rightArm->SetModelScale(Vector3(3,-18,3));
+	rightArm->SetModelScale(Vector3(6,-18,6));
 	rightArm->SetTransform(Matrix4::Translation(Vector3(12,30,-1)));
 	body->AddChild(rightArm);
 
@@ -53,11 +56,11 @@ CubeRobot::~CubeRobot()
 void CubeRobot::Update(float msec) {
 	transform = transform * Matrix4::Rotation(msec / 10.0f, Vector3(0, 1, 0));
 
-	head->SetTransform(head->GetTransform()*Matrix4::Rotation(-msec / 10.0f,Vector3(0,1,0)));
+	head->SetTransform(head->GetTransform()*Matrix4::Rotation(-msec / 10.0f,Vector3(0,0,0)));
 
-	leftArm->SetTransform(leftArm->GetTransform()*Matrix4::Rotation(-msec / 10.0f,Vector3(1,0,0)));
+	leftArm->SetTransform(leftArm->GetTransform()*Matrix4::Rotation(-msec / 2.0f,Vector3(1,0,0)));
 
-	rightArm->SetTransform(rightArm->GetTransform() * Matrix4::Rotation(msec / 10.0f, Vector3(1, 0, 0)));
+	rightArm->SetTransform(rightArm->GetTransform() * Matrix4::Rotation(msec / 2.0f, Vector3(1, 0, 0)));
 
 	//derived from sceneNode, so call our update function
 	SceneNode::Update(msec);

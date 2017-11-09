@@ -1,39 +1,24 @@
 #pragma comment(lib, "nclgl.lib")
 
-#include "../../nclGL/window.h"
+#include "../../nclgl/window.h"
 #include "Renderer.h"
 
 int main() {
-	Window w("Texturing!", 800,600,false);	 //This is all boring win32 window creation stuff!
-	if(!w.HasInitialised()) {
-		return -1;
-	}
-	
-	Renderer renderer(w);	//This handles all the boring OGL 3.2 initialisation stuff, and sets up our tutorial!
-	if(!renderer.HasInitialised()) {
+	Window w("Cube Mapping! sky textures courtesy of http://www.hazelwhorley.com", 1920, 1080, true);
+	if (!w.HasInitialised()) {
 		return -1;
 	}
 
-	float rotate = 0.0f;
-	while(w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)){
-		if(Window::GetKeyboard()->KeyDown(KEYBOARD_LEFT) ) {
-			--rotate;
-			renderer.UpdateTextureMatrix(rotate);
-		}
+	Renderer renderer(w);
+	if (!renderer.HasInitialised()) {
+		return -1;
+	}
 
-		if(Window::GetKeyboard()->KeyDown(KEYBOARD_RIGHT) ) {
-			++rotate;
-			renderer.UpdateTextureMatrix(rotate);
-		}
+	w.LockMouseToWindow(true);
+	w.ShowOSPointer(false);
 
-		if(Window::GetKeyboard()->KeyTriggered(KEYBOARD_1) ) {
-			renderer.ToggleFiltering();
-		}
-
-		if(Window::GetKeyboard()->KeyTriggered(KEYBOARD_2) ) {
-			renderer.ToggleRepeating();
-		}
-
+	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
+		renderer.UpdateScene(w.GetTimer()->GetTimedMS());
 		renderer.RenderScene();
 	}
 

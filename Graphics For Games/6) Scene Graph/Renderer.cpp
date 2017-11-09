@@ -49,6 +49,9 @@ void Renderer::RenderScene() {
 
 void Renderer::DrawNode(SceneNode*n) {
 	if (n->GetMesh()) {
+		if (n->GetMesh()->GetTexture()) {
+			SetTextureRepeating(n->GetMesh()->GetTexture(), true);
+		}
 		Matrix4 transform = n->GetWorldTransform()*Matrix4::Scale(n->GetModelScale());
 		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(),"modelMatrix"),1,false, (float*)&transform);
 

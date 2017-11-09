@@ -48,6 +48,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
+	initPortal();
 }
 
 Renderer::~Renderer(void) {
@@ -73,6 +74,7 @@ void Renderer::RenderScene() {
 
 	DrawSkybox();
 	DrawHeightmap();
+	DrawPortal();
 	DrawWater();
 
 	SwapBuffers();
@@ -98,6 +100,32 @@ void Renderer::DrawSkybox() {
 void Renderer::moveLight()
 {
 	this->light->SetPosition(light->GetPosition() + Vector3(10, 0, 10));
+}
+
+void Renderer::DrawPortal()
+{
+	SetCurrentShader(lightShader);
+	SetShaderLight(*light);
+
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(),"modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*portalQuad->GetModelScale()));
+
+
+	portalQuad->Draw();
+
+	glUseProgram(0);
+	UpdateShaderMatrices();
+
+}
+
+void Renderer::initPortal()
+{
+	portalQuad = new SceneNode(Mesh::GenerateQuad());
+	portalQuad->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lava.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	portalQuad->SetModelScale(Vector3(10,10,10));
+	portalQuad->SetTransform(Matrix4::Translation(Vector3(100,80,100)));
+
+	
 }
 
 void Renderer::DrawHeightmap() {

@@ -97,7 +97,7 @@ void Renderer::DrawSkybox() {
 
 void Renderer::moveLight()
 {
-	this->light->SetPosition(light->GetPosition() + Vector3(10,0,10));
+	this->light->SetPosition(light->GetPosition() + Vector3(0.1,0,0.1));
 }
 
 void Renderer::DrawHeightmap() {
