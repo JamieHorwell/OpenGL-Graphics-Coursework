@@ -2,12 +2,13 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	camera = new Camera();
+	cameraStart = camera->BuildViewMatrix();
 	heightMap = new HeightMap(TEXTUREDIR"landTest.raw");
 	quad = Mesh::GenerateQuad();
 
 	camera->SetPosition(Vector3(RAW_WIDTH*HEIGHTMAP_X / 2.0f, 500.0f, RAW_WIDTH*HEIGHTMAP_X));
 
-	light = new Light(Vector3((RAW_HEIGHT*HEIGHTMAP_TEX_X), 500.0f, (RAW_HEIGHT*HEIGHTMAP_Z)), Vector4(1, 1, 1, 1), (RAW_WIDTH*HEIGHTMAP_TEX_X) / 2.0f);
+	light = new Light(Vector3(3000, 1500.0f, 3000), Vector4(1, 1, 1, 1), (RAW_WIDTH*HEIGHTMAP_TEX_X) / 2.0f);
 	light->SetRadius(120000);
 
 	reflectShader = new Shader(SHADERDIR"PerPixelVertex.glsl", SHADERDIR"reflectFragment.glsl");
@@ -66,19 +67,92 @@ void Renderer::UpdateScene(float msec) {
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
 	waterRotate += msec / 1000.0f;
-	moveLight();
+	//moveLight();
+}
+
+void Renderer::renderFromPortalViews()
+{
+	
+	//1. disable color and depth draw, enable writing to stencil buffer
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	glDepthMask(GL_FALSE);
+	glStencilMask(0xFF);
+	glClear(GL_STENCIL_BUFFER_BIT);
+	glEnable(GL_STENCIL_TEST);
+
+
+	//2. stencil test always fails on every pixel drawn
+	glStencilFunc(GL_NEVER, 0, 0xFF);
+
+	//3. increment stencil value on stencil fail
+	glStencilOp(GL_INCR, GL_KEEP, GL_KEEP);  // increment stencil value on stencil fail
+	
+
+	//4. draw our portal, which will fill inside of portal frame with 1s
+	SetCurrentShader(lightShader);
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*Matrix4::Scale(portalQuad->GetModelScale())));
+	portalQuad->Draw();
+
+
+	//5. now get viewmatrix from portal
+	Matrix4 tempViewHolder = viewMatrix;
+	viewMatrix = getPortalView(viewMatrix, portalQuad,portalQuad2);
+	UpdateShaderMatrices();
+
+	//6. enable color and depth drawing, disable writing to stencil buffer
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glDepthMask(GL_TRUE);
+	glStencilMask(0x00);
+	
+	//7. stencil function to GL_LEQUAL, only draw where stencil has been incremented, so where the portal frame is
+	glStencilFunc(GL_LEQUAL, 1, 0xff);
+
+	//8. draw rest of scene from portalView ( as weve changed viewmatrix in OGLRenderer
+	//DrawSkybox();
+	DrawHeightmap();
+	//DrawPortal();
+	DrawWater();
+	
+	//reset view 
+	viewMatrix = tempViewHolder;
+
+	//9. disable stencil test, color buffer drawing, enable depth drawing
+	glDisable(GL_STENCIL_TEST);
+	glStencilMask(0x00);
+	glColorMask(GL_FALSE, GL_FALSE,GL_FALSE, GL_FALSE);
+	glDepthMask(GL_TRUE);
+
+	//10. clear depth buffer
+	glClear(GL_DEPTH_BUFFER_BIT);
+	//11. draw quad to depth buffer
+	SetCurrentShader(lightShader);
+	UpdateShaderMatrices();
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*Matrix4::Scale(portalQuad->GetModelScale())));
+	portalQuad->Draw();
+	glUseProgram(0);
+
+	//12. enable color buffer
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+	UpdateShaderMatrices();
+	
 }
 
 void Renderer::RenderScene() {
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	DrawSkybox();
+	renderFromPortalViews();
+
+	//DrawSkybox();
 	DrawHeightmap();
 	DrawPortal();
 	DrawWater();
 
 	SwapBuffers();
 }
+
+
+
 
 void Renderer::DrawSkybox() {
 	//dont want to write to depth buffer
@@ -107,23 +181,49 @@ void Renderer::DrawPortal()
 	SetCurrentShader(lightShader);
 	SetShaderLight(*light);
 
+
+
+	
+	/*glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(),"modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*Matrix4::Scale(portalQuad->GetModelScale())));
+
+	portalQuad->Draw();*/
+
+	
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(),"modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*portalQuad->GetModelScale()));
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalQuad2->GetTransform()*Matrix4::Scale(portalQuad2->GetModelScale())));
 
-
-	portalQuad->Draw();
+	portalQuad2->Draw();
 
 	glUseProgram(0);
 	UpdateShaderMatrices();
 
 }
 
+Matrix4 Renderer::getPortalView(Matrix4 originalView, SceneNode * portalSrc, SceneNode * portalDest)
+{
+	//modelview matrix of portal
+	Matrix4 mv = originalView * portalSrc->GetTransform();
+
+	//need to invert portalDest
+	Matrix4 portalCam = mv * Matrix4::Rotation(90, Vector3(0, 1, 0)) *  portalDest->GetTransform();
+
+	//return viewMatrix * Matrix4::Translation(Vector3(1000,1000,1000));
+	return cameraStart;
+}
+
 void Renderer::initPortal()
 {
 	portalQuad = new SceneNode(Mesh::GenerateQuad());
 	portalQuad->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lava.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	portalQuad->SetModelScale(Vector3(10,10,10));
-	portalQuad->SetTransform(Matrix4::Translation(Vector3(100,80,100)));
+	portalQuad->SetModelScale(Vector3(200,200,200));
+	portalQuad->SetTransform(Matrix4::Translation(Vector3(1000,1000,1000)));
+
+	portalQuad2 = new SceneNode(Mesh::GenerateQuad());
+	portalQuad2->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lava.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	portalQuad2->SetModelScale(Vector3(200,200,200));
+	portalQuad2->SetTransform(Matrix4::Translation(Vector3(4500,1000,4500)));
+	portalQuad2->SetTransform(portalQuad2->GetTransform() * Matrix4::Rotation(90,Vector3(0,1,0)));
 
 	
 }
