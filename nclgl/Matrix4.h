@@ -37,6 +37,9 @@ public:
 	//Sets matrix to identity matrix (1.0 down the diagonal)
 	void	ToIdentity();
 
+	//get the inverse of the matrix
+	Matrix4 Inverse(const Matrix4 mat);
+
 	//Gets the OpenGL position vector (floats 12,13, and 14)
 	Vector3 GetPositionVector() const;
 	//Sets the OpenGL position vector (floats 12,13, and 14)

@@ -13,6 +13,7 @@ public:
 
 	virtual void RenderScene();
 	virtual void UpdateScene(float msec);
+	void renderFromPortalViews();
 
 protected:
 	void DrawHeightmap();
@@ -22,20 +23,27 @@ protected:
 	void DrawPortal();
 
 
+	Matrix4 getPortalView(Matrix4 originalView, SceneNode* portalSrc, SceneNode* portalDest);
+
 	void initPortal();
 
 	Shader* lightShader;
 	Shader* reflectShader;
 	Shader* skyboxShader;
+	Shader* mountainShader;
 
 	HeightMap* heightMap;
 	Mesh* quad;
 
 	SceneNode* portalQuad;
+	SceneNode* portalQuad2;
 
 	Light* light;
 	Camera* camera;
 
+	Matrix4 cameraStart;
+
+	GLuint toptex;
 	GLuint cubeMap;
 
 	float waterRotate;

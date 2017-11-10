@@ -20,6 +20,11 @@ void Matrix4::ToIdentity() {
 	values[15] = 1.0f;
 }
 
+Matrix4 Matrix4::Inverse(const Matrix4 mat)
+{
+	return mat;
+}
+
 void Matrix4::ToZero()	{
 	for(int i = 0; i < 16; i++)	{
 		values[i] = 0.0f;

@@ -4,7 +4,7 @@
 #include "Renderer.h"
 
 int main() {
-	Window w("Cube Mapping! sky textures courtesy of http://www.hazelwhorley.com", 1920, 1080, true);
+	Window w("Cube Mapping! sky textures courtesy of http://www.hazelwhorley.com", 1920, 1080, false);
 	if (!w.HasInitialised()) {
 		return -1;
 	}
@@ -16,6 +16,8 @@ int main() {
 
 	w.LockMouseToWindow(true);
 	w.ShowOSPointer(false);
+
+	w.GetTimer()->GetTimedMS();
 
 	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
 		renderer.UpdateScene(w.GetTimer()->GetTimedMS());
