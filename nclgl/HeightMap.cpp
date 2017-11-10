@@ -21,7 +21,6 @@ HeightMap::HeightMap(std::string name)
 	file.read((char*)data,numVertices*sizeof(unsigned char));
 	file.close();
 
-
 	//fill our vertices and texCoords
 	for (int x = 0; x < RAW_WIDTH; ++x) {
 		for (int z = 0; z < RAW_HEIGHT; ++z) {

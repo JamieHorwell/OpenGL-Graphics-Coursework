@@ -22,13 +22,17 @@
  vec4 diffuse1;
  vec4 diffuse2;
  
-	diffuse1 = texture ( diffuseTex , IN.texCoord );
+diffuse1 = texture ( diffuseTex , IN.texCoord );
  
 
-	diffuse2 = texture (topTex, IN.texCoord);
+diffuse2 = texture (topTex, IN.texCoord);
  
+float yValue = (IN.worldPos.y - 500) / 1000;
+
+
+yValue = clamp(yValue, 0.0, 1.0);
  
- diffuse = mix(diffuse1,diffuse2,0.5);
+diffuse = mix(diffuse1,diffuse2,yValue);
 
 
  vec3 incident = normalize( lightPos - IN.worldPos );
@@ -44,7 +48,7 @@
  vec3 colour = ( diffuse.rgb * lightColour.rgb );
  colour += ( lightColour.rgb * sFactor ) * 0.33;
  FragColor = vec4 ( colour * atten * lambert , diffuse.a );
- FragColor.rgb += ( diffuse.rgb * lightColour.rgb ) * 0.15;
+ FragColor.rgb += ( diffuse.rgb * lightColour.rgb ) * 0.19;
  
  //first see if any colour appears
  //FragColor = vec4(1,0,0,1);

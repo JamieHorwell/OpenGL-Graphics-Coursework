@@ -16,6 +16,8 @@ public:
 	GLuint GetProgram() { return program; };
 	bool LinkProgram();
 
+	string getName() { return name; };
+	void setName(string name) { this->name = name; };
 
 protected:
 	void SetDefaultAttributes();
@@ -26,5 +28,8 @@ protected:
 	GLuint program;
 
 	bool loadFailed;
+
+	//to identify the shader
+	string name;
 };
 

@@ -3,12 +3,12 @@
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	camera = new Camera();
 	cameraStart = camera->BuildViewMatrix();
-	heightMap = new HeightMap(TEXTUREDIR"landTest.raw");
+	heightMap = new HeightMap(TEXTUREDIR"snowMountain.raw");
 	quad = Mesh::GenerateQuad();
 
 	camera->SetPosition(Vector3(RAW_WIDTH*HEIGHTMAP_X / 2.0f, 500.0f, RAW_WIDTH*HEIGHTMAP_X));
 
-	light = new Light(Vector3(3000, 1500.0f, 3000), Vector4(1, 1, 1, 1), (RAW_WIDTH*HEIGHTMAP_TEX_X) / 2.0f);
+	light = new Light(Vector3(3000, 2500.0f, 3000), Vector4(1, 1, 1, 1), (RAW_WIDTH*HEIGHTMAP_TEX_X) / 2.0f);
 	light->SetRadius(120000);
 
 	reflectShader = new Shader(SHADERDIR"PerPixelVertex.glsl", SHADERDIR"reflectFragment.glsl");
@@ -41,6 +41,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	SetTextureRepeating(quad->GetTexture(), true);
 	SetTextureRepeating(heightMap->GetTexture(), true);
 	SetTextureRepeating(heightMap->GetBumpMap(), true);
+	SetTextureRepeating(toptex,true);
+
 
 	init = true;
 	waterRotate = 0.0f;

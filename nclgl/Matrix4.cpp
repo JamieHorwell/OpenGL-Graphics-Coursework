@@ -22,6 +22,13 @@ void Matrix4::ToIdentity() {
 
 Matrix4 Matrix4::Inverse(const Matrix4 mat)
 {
+	Matrix4 matCopy = mat;
+
+	float det2_01_01 = matCopy.values[0] * matCopy.values[1 + (4 * 1)] - matCopy.values[0 + (4 * 1)] * matCopy.values[1];
+	float det2_01_02
+
+
+
 	return mat;
 }
 
