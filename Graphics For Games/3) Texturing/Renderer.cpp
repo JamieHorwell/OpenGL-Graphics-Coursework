@@ -113,7 +113,7 @@ void Renderer::renderFromPortalViews()
 	glStencilFunc(GL_LEQUAL, 1, 0xff);
 
 	//8. draw rest of scene from portalView ( as weve changed viewmatrix in OGLRenderer
-	//DrawSkybox();
+	DrawSkybox();
 	DrawHeightmap();
 	//DrawPortal();
 	DrawWater();
@@ -147,8 +147,7 @@ void Renderer::RenderScene() {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	DrawSkybox();
 	renderFromPortalViews();
-
-	//DrawSkybox();
+	
 	DrawHeightmap();
 	DrawPortal();
 	DrawWater();

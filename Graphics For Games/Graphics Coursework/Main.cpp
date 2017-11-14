@@ -4,7 +4,7 @@
 #include "Renderer.h"
 
 int main() {
-	Window w("Cube Mapping! sky textures courtesy of http://www.hazelwhorley.com", 1920, 1080, false);
+	Window w("Cube Mapping! sky textures courtesy of http://www.hazelwhorley.com", 800, 600, false);
 	if (!w.HasInitialised()) {
 		return -1;
 	}

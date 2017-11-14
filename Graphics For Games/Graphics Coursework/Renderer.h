@@ -23,9 +23,19 @@ protected:
 	Camera* camera;
 
 
-
+	//specific rendering
 	void RenderSkyBox();
-	
+	void RenderWater();
+	void RenderHeightMap();
+
+
+	GLuint cubeMap;
 
 	Mesh* skyBox;
+	Mesh* waterMesh;
+
+
+	HeightMap* terrain;
+
+	Light* mainLight;
 };
