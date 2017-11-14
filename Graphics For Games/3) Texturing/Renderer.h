@@ -27,6 +27,10 @@ protected:
 
 	void initPortal();
 
+
+	int portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode* portal);
+
+
 	Shader* lightShader;
 	Shader* reflectShader;
 	Shader* skyboxShader;

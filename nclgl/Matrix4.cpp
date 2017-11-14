@@ -20,16 +20,82 @@ void Matrix4::ToIdentity() {
 	values[15] = 1.0f;
 }
 
+//function courtesy of DOOM3 source code :) 
 Matrix4 Matrix4::Inverse(const Matrix4 mat)
 {
 	Matrix4 matCopy = mat;
 
-	float det2_01_01 = matCopy.values[0] * matCopy.values[1 + (4 * 1)] - matCopy.values[0 + (4 * 1)] * matCopy.values[1];
-	float det2_01_02
+	//2x2 determinant
+	float det2_01_01 = matCopy.values[0] * matCopy.values[(4 * 1) + 1] - matCopy.values[1] * matCopy.values[(4 * 1) + 0];
+	float det2_01_02 = matCopy.values[0] * matCopy.values[(4 * 1) + 1] - matCopy.values[2] * matCopy.values[(4*1) + 0];
+	float det2_01_03 = matCopy.values[0] * matCopy.values[(4*1) + 3] - matCopy.values[0 + (4 * 3)] * matCopy.values[(4*1) + 0];
+	float det2_01_12 = matCopy.values[1] * matCopy.values[(4 * 1) + 2] - matCopy.values[2] * matCopy.values[(4 * 1) + 1];
+	float det2_01_13 = matCopy.values[0] * matCopy.values[(4 * 1) + 3] - matCopy.values[3] * matCopy.values[(4 * 1) + 1];
+	float det2_01_23 = matCopy.values[2] * matCopy.values[(4 * 1) + 3] - matCopy.values[3] * matCopy.values[(4 * 1) + 2];
+
+	float det3_201_012 = matCopy.values[(2 * 4) + 0] * det2_01_12 - matCopy.values[(2 * 4) + 1] * det2_01_02 + matCopy.values[(2 * 4) + 2] * det2_01_01;
+	float det3_201_013 = matCopy.values[(2 * 4) + 0] * det2_01_13 - matCopy.values[(2 * 4) + 1] * det2_01_03 + matCopy.values[(2 * 4) + 3] * det2_01_01;
+	float det3_201_023 = matCopy.values[(2 * 4) + 0] * det2_01_23 - matCopy.values[(2 * 4) + 2] * det2_01_03 + matCopy.values[(2 * 4) + 3] * det2_01_02;
+	float det3_201_123 = matCopy.values[(2 * 4) + 1] * det2_01_23 - matCopy.values[(2 * 4) + 2] * det2_01_13 + matCopy.values[(2 * 4) + 3] * det2_01_12;
+
+	double det = (-det3_201_123 * matCopy.values[3 * 4] + det3_201_023 * matCopy.values[(3 * 4) + 1] - det3_201_013 * matCopy.values[(3 * 4) + 2] + det3_201_012 * matCopy.values[(3*4) + 3]);
+
+	double invDet = 1.0f / det;
+	
+
+	float det2_03_01 = matCopy.values[0] * matCopy.values[(3 * 4) + 1] - matCopy.values[1] * matCopy.values[3 * 4];
+	float det2_03_02 = matCopy.values[0] * matCopy.values[(3 * 4) + 2] - matCopy.values[2] * matCopy.values[3 * 4];
+	float det2_03_03 = matCopy.values[0] * matCopy.values[(3 * 4) + 3] - matCopy.values[3] * matCopy.values[3*4];
+	float det2_03_12 = matCopy.values[1] * matCopy.values[(3 * 4) + 2] - matCopy.values[2] * matCopy.values[(3 * 4) + 1];
+	float det2_03_13 = matCopy.values[1] * matCopy.values[(3 * 4) + 3] - matCopy.values[3] * matCopy.values[(3 * 4) + 1];
+	float det2_03_23 = matCopy.values[2] * matCopy.values[(3 * 4) + 3] - matCopy.values[3] * matCopy.values[(3 * 4) + 2];
+
+	float det2_13_01 = matCopy.values[1 * 4] * matCopy.values[(3 * 4) + 1] - matCopy.values[(1 * 4) + 1] * matCopy.values[3 * 4];
+	float det2_13_02 = matCopy.values[1 * 4] * matCopy.values[(3 * 4) + 2] - matCopy.values[(1 * 4) + 2] * matCopy.values[3 * 4];
+	float det2_13_03 = matCopy.values[1 * 4] * matCopy.values[(3 * 4) + 3] - matCopy.values[(1 * 4) + 3] * matCopy.values[3 * 4];
+	float det2_13_12 = matCopy.values[(1 * 4) + 1] * matCopy.values[(3 * 4) + 2] - matCopy.values[(1 * 4) + 2] * matCopy.values[(3 * 4) + 1];
+	float det2_13_13 = matCopy.values[(1 * 4) + 1] * matCopy.values[(3 * 4) + 3] - matCopy.values[(1 * 4) + 3] * matCopy.values[(3 * 4) + 1];
+	float det2_13_23 = matCopy.values[(1 * 4) + 2] * matCopy.values[(3 * 4) + 3] - matCopy.values[(1 * 4) + 3] * matCopy.values[(3 * 4) + 2];
+
+	//remaning 2x2 sub-determinants
+	float det3_203_012 = matCopy.values[(2 * 4)] * det2_03_12 - matCopy.values[(2 * 4) + 1] * det2_03_02 + matCopy.values[(2 * 4) + 2] * det2_03_01;
+	float det3_203_013 = matCopy.values[(2 * 4)] * det2_03_13 - matCopy.values[(2 * 4) + 1] * det2_03_03 + matCopy.values[(2 * 4) + 3] * det2_03_01;
+	float det3_203_023 = matCopy.values[(2 * 4)] * det2_03_23 - matCopy.values[(2 * 4) + 2] * det2_03_03 + matCopy.values[(2 * 4) + 3] * det2_03_02;
+	float det3_203_123 = matCopy.values[(2 * 4) + 1] * det2_03_23 - matCopy.values[(2 * 4) + 2] * det2_03_13 + matCopy.values[(2 * 4) + 3] * det2_03_12;
+
+	float det3_213_012 = matCopy.values[2 * 4] * det2_13_12 - matCopy.values[(2 * 4) + 1] * det2_13_02 + matCopy.values[(2 * 4) + 2] * det2_13_01;
+	float det3_213_013 = matCopy.values[2 * 4] * det2_13_13 - matCopy.values[(2 * 4) + 1] * det2_13_03 + matCopy.values[(2 * 4) + 3] * det2_13_01;
+	float det3_213_023 = matCopy.values[2 * 4] * det2_13_23 - matCopy.values[(2 * 4) + 2] * det2_13_03 + matCopy.values[(2 * 4) + 3] * det2_13_02;
+	float det3_213_123 = matCopy.values[(2 * 4) + 1] * det2_13_23 - matCopy.values[(2 * 4) + 2] * det2_13_13 + matCopy.values[(2 * 4) + 3] * det2_13_12;
+
+	float det3_301_012 = matCopy.values[3 * 4] * det2_01_12 - matCopy.values[(3 * 4) + 1] * det2_01_02 + matCopy.values[(3 * 4) + 2] * det2_01_01;
+	float det3_301_013 = matCopy.values[3 * 4] * det2_01_13 - matCopy.values[(3 * 4) + 1] * det2_01_03 + matCopy.values[(3 * 4) + 3] * det2_01_01;
+	float det3_301_023 = matCopy.values[3 * 4] * det2_01_23 - matCopy.values[(3 * 4) + 2] * det2_01_03 + matCopy.values[(3 * 4) + 3] * det2_01_02;
+	float det3_301_123 = matCopy.values[(3 * 4) + 1] * det2_01_23 - matCopy.values[(3 * 4) + 2] * det2_01_13 + matCopy.values[(3 * 4) + 3] * det2_01_12;
+
+	matCopy.values[0] = -det3_213_123 * invDet;
+	matCopy.values[(4 * 1)] = +det3_213_023 * invDet;
+	matCopy.values[(4 * 2)] = -det3_213_013 * invDet;
+	matCopy.values[(4 * 3)] = +det3_213_012 * invDet;
+
+	matCopy.values[1] = +det3_203_123 * invDet;
+	matCopy.values[(1 * 4) + 1] = -det3_203_023 * invDet;
+	matCopy.values[(2 * 4) + 1] = +det3_203_013 * invDet;
+	matCopy.values[(3 * 4) + 1] = - det3_203_012 * invDet;
+
+	matCopy.values[2] = +det3_301_123 * invDet;
+	matCopy.values[(1 * 4) + 2] = -det3_301_023 * invDet;
+	matCopy.values[(2 * 4) + 2] = -det3_301_013 * invDet;
+	matCopy.values[(3 * 4) + 2] = -det3_301_012 * invDet;
+
+	matCopy.values[3] = -det3_201_123 * invDet;
+	matCopy.values[(1 * 4) + 3] = +det3_201_023 * invDet;
+	matCopy.values[(2 * 4) + 3] = -det3_201_013 * invDet;
+	matCopy.values[(3 * 4) + 3] = +det3_201_012 * invDet;
 
 
 
-	return mat;
+	return matCopy;
 }
 
 void Matrix4::ToZero()	{

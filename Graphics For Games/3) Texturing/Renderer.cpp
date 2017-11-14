@@ -211,9 +211,9 @@ Matrix4 Renderer::getPortalView(Matrix4 originalView, SceneNode * portalSrc, Sce
 	Matrix4 mv = originalView * portalSrc->GetTransform();
 
 	//need to invert portalDest
-	Matrix4 portalCam = mv * Matrix4::Rotation(90, Vector3(0, 1, 0)) *  portalDest->GetTransform();
+	Matrix4 portalCam = mv * Matrix4::Rotation(180, Vector3(0, 1, 0)) *  Matrix4::Inverse(portalDest->GetTransform());
 
-	return viewMatrix * Matrix4::Translation(Vector3(1000,1000,1000));
+	return portalCam;
 	//return cameraStart;
 }
 
@@ -226,11 +226,24 @@ void Renderer::initPortal()
 
 	portalQuad2 = new SceneNode(Mesh::GenerateQuad());
 	portalQuad2->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"lava.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-	portalQuad2->SetModelScale(Vector3(200, 200, 200));
-	portalQuad2->SetTransform(Matrix4::Translation(Vector3(4500, 1000, 4500)));
+	portalQuad2->SetModelScale(Vector3(100, 100, 100));
+	portalQuad2->SetTransform(Matrix4::Translation(Vector3(4700, 1000, 5200)));
 	portalQuad2->SetTransform(portalQuad2->GetTransform() * Matrix4::Rotation(90, Vector3(0, 1, 0)));
 
 
+}
+
+int Renderer::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal)
+{
+	//cameraviews arent in same position
+	if (pos1 != pos2) {
+		for (int i = 0; i < 2; ++i) {
+
+		}
+
+	}
+
+	return 0;
 }
 
 void Renderer::DrawHeightmap() {

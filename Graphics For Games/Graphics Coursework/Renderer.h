@@ -22,5 +22,10 @@ protected:
 
 	Camera* camera;
 
+
+
+	void RenderSkyBox();
 	
+
+	Mesh* skyBox;
 };
