@@ -2,15 +2,15 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	camera = new Camera();
-
+	time = 0;
 	skyBox = Mesh::GenerateQuad();
 	waterMesh = Mesh::GenerateQuad();
 	terrain = new HeightMap(TEXTUREDIR"snowMountain.raw");
 
 	//add shaders and textures to our resourceManager
-	resources.addShader("reflectShader","PerPixelVertex.glsl","reflectFragment.glsl");
+	resources.addShader("reflectShader","FluidVertex.glsl","reflectFragment.glsl");
 	resources.addShader("skyboxShader","skyboxVertex.glsl","skyboxFragment.glsl");
-	resources.addShader("mountainBlend","BumpVertex.glsl","mountainFragment.glsl");
+	resources.addShader("mountainBlend","BumpVertexPerlin.glsl","mountainFragmentPerlin.glsl");
 
 	//hell scene textures
 	resources.addTexture("lava.png");
@@ -25,6 +25,12 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	resources.addTexture("snow7_local.jpg");
 	resources.addSkybox("snowSky","stormydays_bk.tga","stormydays_ft.tga","stormydays_up.tga","stormydays_dn.tga","stormydays_lf.tga","stormydays_rt.tga");
 	resources.addSkybox("hellSky","rusted_west.jpg","rusted_east.jpg","rusted_up.jpg","rusted_down.jpg","rusted_south.jpg","rusted_north.jpg");
+
+	//perlin texture to sample gradients from
+	resources.addTexture("noiseSampler.jpg");
+	SetTextureRepeating(resources.getTexture("noiseSampler.jpg"), true);
+
+
 
 	//set some of our textures to be repeating
 	SetTextureRepeating(resources.getTexture("mountainSide.png"), TRUE);
@@ -57,7 +63,7 @@ Renderer::~Renderer() {
 void Renderer::RenderScene() {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	RenderSkyBox();
-	//RenderWater();
+	RenderWater();
 	RenderHeightMap();
 	SwapBuffers();
 }
@@ -65,6 +71,7 @@ void Renderer::RenderScene() {
 void Renderer::UpdateScene(float msec) {
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
+	time += msec;
 }
 
 void Renderer::RenderSkyBox()
@@ -92,12 +99,26 @@ void Renderer::RenderWater()
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "cubeTex"), 2);
+	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "time"), time);
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, resources.getSkybox("snowSky"));
 
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, resources.getTexture("noiseSampler.jpg"));
+
+
+	float heightX = (RAW_WIDTH*HEIGHTMAP_X / 2.0f);
+	float heightY = 200 * HEIGHTMAP_Y / 6.0f;
+	float heightZ = (RAW_HEIGHT * HEIGHTMAP_Z / 2.0f);
+
+	modelMatrix = Matrix4::Translation(Vector3(heightX, heightY, heightZ)) * Matrix4::Scale(Vector3(heightX, 1, heightZ)) * Matrix4::Rotation(90, Vector3(1.0f, 0.0f, 0.0f));
+
+	UpdateShaderMatrices();
+
 	waterMesh->Draw();
 
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glUseProgram(0);
 }
 
@@ -114,6 +135,8 @@ void Renderer::RenderHeightMap()
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "topTex"), 2);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "topTexBump"), 3);
 
+	//also pass in perlin texture
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "perlinTex"), 4);
 
 	//top of mountain texture
 	glActiveTexture(GL_TEXTURE2);
@@ -121,6 +144,9 @@ void Renderer::RenderHeightMap()
 	//also bind normal for toptexture
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, resources.getTexture("snow7_local.jpg"));
+
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, resources.getTexture("noiseSampler.jpg"));
 
 	//reset matrices
 	modelMatrix.ToIdentity();

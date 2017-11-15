@@ -38,4 +38,6 @@ protected:
 	HeightMap* terrain;
 
 	Light* mainLight;
+
+	float time;
 };
