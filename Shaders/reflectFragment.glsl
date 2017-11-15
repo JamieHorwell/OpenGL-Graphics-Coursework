@@ -18,7 +18,7 @@ in Vertex {
 out vec4 FragColor;
 
 void main(void){
-	vec4 diffuse = texture(diffuseTex, IN.texCoord) * IN.colour;
+	vec4 diffuse = texture(diffuseTex, IN.texCoord);
 	vec3 incident = normalize(IN.worldPos - cameraPos);
 	float dist = length(lightPos - IN.worldPos);
 	float atten = 1.0 - clamp(dist / lightRadius, 0.2,1.0);
@@ -26,5 +26,5 @@ void main(void){
 	
 	
 	FragColor = (lightColour*diffuse*atten)*(diffuse+reflection);
-	
+	FragColor.a = 0.6;
 }

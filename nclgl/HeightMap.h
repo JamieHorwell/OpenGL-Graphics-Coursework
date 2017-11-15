@@ -21,6 +21,7 @@ class HeightMap : public Mesh
 public:
 	//initialise heightmap with data
 	HeightMap(std::string name);
+	HeightMap();
 	~HeightMap();
 };
 

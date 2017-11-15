@@ -29,7 +29,7 @@ float fade(float t) {
 }
 
 vec3 grad(vec3 p) {
-	const float texture_width = 256.0;
+	const float texture_width = 600.0;
 	vec4 v = texture2D(perlinTex, vec2(p / texture_width));
 	//make sure we remap our values from -1, 1 range rather than standard tex coord range
 	return normalize(v.xyz*2.0 - vec3(1.0));
@@ -80,10 +80,11 @@ float noise(vec3 p) {
 
 void main(void)	{
 	//noise generation
-	float n = noise(vec3(position.x,position.z,time));
+	float n = noise(vec3(position.x + time / 70,position.z + time / 70,time / 70)/ 170.0) / 1.0 + noise(vec3(position.x + time / 50,position.z + time / 50,time / 50)/64.0) / 2.0
+	+ noise(vec3(position.x + time / 30,position.z + time / 30,time / 30)/32.0) / 16.0;
 	vec3 newPos = position;
-	newPos.z += n * 5;
-
+	newPos.y += n * 100;
+	
 
 	OUT.colour = colour;
 	OUT.texCoord = (textureMatrix * vec4(texCoord,0.0,1.0)).xy;
