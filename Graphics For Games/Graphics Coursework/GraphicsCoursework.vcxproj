@@ -73,6 +73,7 @@
     <ClCompile Include="CameraTrail.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PerlinNoise.cpp" />
+    <ClCompile Include="Portal.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="WaterReflectRefract.cpp" />
@@ -80,6 +81,7 @@
   <ItemGroup>
     <ClInclude Include="CameraTrail.h" />
     <ClInclude Include="PerlinNoise.h" />
+    <ClInclude Include="Portal.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="WaterReflectRefract.h" />

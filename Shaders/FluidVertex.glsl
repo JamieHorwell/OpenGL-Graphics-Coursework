@@ -17,7 +17,7 @@ in vec2 texCoord;
 
 out Vertex {
 	vec4 colour;
-	vec2 texCoord;
+	vec4 clipSpace;
 	vec3 normal;
 	vec3 worldPos;
 } OUT;
@@ -80,19 +80,20 @@ float noise(vec3 p) {
 
 void main(void)	{
 	//noise generation
-	float n = noise(vec3(position.x + time / 70,position.z + time / 70,time / 70)/ 170.0) / 1.0 + noise(vec3(position.x + time / 50,position.z + time / 50,time / 50)/64.0) / 2.0
-	+ noise(vec3(position.x + time / 30,position.z + time / 30,time / 30)/32.0) / 16.0;
+	float n = noise(vec3(position.x + time / 20,position.z + time / 20,time / 20)/ 170.0) / 1.0 + noise(vec3(position.x + time / 10,position.z + time / 10,time / 10)/64.0) / 2.0
+	+ noise(vec3(position.x + time / 7,position.z + time / 7,time / 7)/32.0) / 16.0;
 	vec3 newPos = position;
-	newPos.y += n * 100;
+	newPos.y += n * 25;
 	
 
 	OUT.colour = colour;
-	OUT.texCoord = (textureMatrix * vec4(texCoord,0.0,1.0)).xy;
+	
 	
 	mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
 	
 	OUT.normal = normalize(normalMatrix * normalize(normal));
 	OUT.worldPos = (modelMatrix * vec4(position,1)).xyz;
+	OUT.clipSpace = (projMatrix * viewMatrix * modelMatrix) * vec4(position.x, position.y, position.z, 1.0);
 	gl_Position = (projMatrix * viewMatrix * modelMatrix) * vec4(newPos, 1.0);
 	
 }

@@ -53,6 +53,8 @@ public:
 	//Sets pitch, in degrees
 	void	SetPitch(float p) {pitch = p;}
 
+	void invertPitch() { pitch = -pitch; };
+
 protected:
 	float	yaw;
 	float	pitch;

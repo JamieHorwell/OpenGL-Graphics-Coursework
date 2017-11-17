@@ -120,10 +120,16 @@ public:
 		return currentShader;
 	}
 
+
+	int getWidth() { return width; };
+	int getHeight() { return height; };
+
+	void			SetCurrentShader(Shader*s);
+
 protected:
 	virtual void	Resize(int x, int y);	
 	void			UpdateShaderMatrices();
-	void			SetCurrentShader(Shader*s);
+	
 
 	void			SetTextureRepeating(GLuint target, bool state);
 

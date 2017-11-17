@@ -27,7 +27,7 @@ protected:
 	SceneNode* root;
 	Camera* camera;
 	Mesh* quad;
-	HeightMap* terrain;
+	HeightMap* snowMountain;
 
 	Frustum frameFrustum;
 

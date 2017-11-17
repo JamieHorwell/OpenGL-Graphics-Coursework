@@ -6,7 +6,7 @@
 #include "../../nclgl/SceneNode.h"
 #include "ResourceManager.h"
 #include "../../nclgl/TextMesh.h"
-
+#include "WaterReflectRefract.h"
 
 class Renderer : public OGLRenderer {
 
@@ -18,19 +18,11 @@ public:
 	virtual void UpdateScene(float msec);
 
 	
+	void RenderScene1();
+	void RenderScene2();
+	void RenderScene3();
 
-
-protected:
-	ResourceManager resources;
-	Camera* camera;
-
-
-	//specific rendering
-	void RenderSkyBox();
-	void RenderWater();
-	void RenderHeightMap();
-	void RenderfboTest();
-	void DrawTextOrth(const std::string &text, const Vector3 &position, const float size = 24.0f, const bool perspective = false);
+	ResourceManager* getResources() { return &resources; };
 
 	void createFBO(GLuint &FBOID);
 	void createTexture(GLuint &TexID);
@@ -39,31 +31,53 @@ protected:
 	void bindFramebuffer(GLuint fboID);
 	void bindScreenbuffer();
 
-	void createWaterBuffers();
+protected:
+	ResourceManager resources;
+	Camera* camera;
 
+
+	//specific rendering
+	void RenderSkyBox(GLuint skyboxTex);
+	void RenderWater();
+	void RenderHeightMap(HeightMap* heightMap);
+	void RenderPortal();
+	//Debugging relfection and refraction textures
+	void RenderfboTest();
+	
+
+
+	void DrawTextOrth(const std::string &text, const Vector3 &position, const float size = 24.0f, const bool perspective = false);
 
 	GLuint cubeMap;
 	Mesh* skyBox;
-	HeightMap* waterMesh;
-	HeightMap* terrain;
-	Light* mainLight;
 
+	//Scene1 
+	HeightMap* waterMesh;
+	HeightMap* snowMountain;
+	Light* mainLight;
+	SceneNode* portalQuad;
 
 	Mesh* reflectionTest;
 	Mesh* refractionTest;
+	Mesh* waterQuad;
+
+	WaterReflectRefract* reflectManager;
 
 
-	GLuint reflectionFBO;
-	GLuint refractionFBO;
-
-	GLuint reflectionTexture;
-	GLuint refractionTexture;
-
-	GLuint reflectionDepthTex;
-	GLuint refractionDepthTex;
+	//Scene2
+	HeightMap* hellMountain;
+	SceneNode* portalQuad2;
 
 
+
+	//Scene3
+
+
+
+	//Scene independent
 	Font* font;
 	float time;
 	int fps;
+
+	
 };

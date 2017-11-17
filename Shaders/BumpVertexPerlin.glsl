@@ -7,6 +7,8 @@ uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
 uniform mat4 textureMatrix;
 
+uniform vec4 clippingPlane; 
+
 in  vec3 position;
 in  vec4 colour;
 in vec3 normal;
@@ -68,6 +70,8 @@ float noise(vec2 p) {
 
 void main(void)	{
 
+	
+
 	vec4 finalPos = (projMatrix * viewMatrix * modelMatrix) * vec4(position, 1.0);
 	
 	//noise generation
@@ -85,6 +89,7 @@ void main(void)	{
 	OUT.tangent = normalize(normalMatrix * normalize(tangent));
 	OUT.binormal = normalize(normalMatrix * normalize(cross(normal,tangent)));
 	OUT.worldPos = (modelMatrix * vec4(position,1)).xyz;
-
+	//clipping out vertexes
+	gl_ClipDistance[0] = dot((modelMatrix * vec4(position,1)),clippingPlane);
 	gl_Position = finalPos;
 }
