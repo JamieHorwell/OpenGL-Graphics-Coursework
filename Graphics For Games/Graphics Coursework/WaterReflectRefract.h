@@ -16,8 +16,8 @@ public:
 	Vector4 getPlaneToClip() { return planeToClip; };
 
 
-	 void cameraReflectionPos(Camera* camera, Matrix4& viewMat);
-	 void resetCamera(Camera* camera, Matrix4& viewMat);
+	 void cameraReflectionPos(Camera& camera, Matrix4& viewMat);
+	 void resetCamera(Camera& camera, Matrix4& viewMat);
 
 	 void createWaterBuffers();
 	

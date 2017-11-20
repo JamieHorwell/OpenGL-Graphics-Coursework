@@ -7,6 +7,11 @@
 #include "ResourceManager.h"
 #include "../../nclgl/TextMesh.h"
 #include "WaterReflectRefract.h"
+#include "Portal.h"
+#include "ParticleEmitter.h"
+
+
+enum class SceneRender { Scene1, Scene2, Scene3 };
 
 class Renderer : public OGLRenderer {
 
@@ -30,6 +35,8 @@ public:
 	void createDepthBufferAttachment(GLuint &depthBufferID);
 	void bindFramebuffer(GLuint fboID);
 	void bindScreenbuffer();
+
+	Camera & getCam() { return *camera; };
 
 protected:
 	ResourceManager resources;
@@ -67,8 +74,10 @@ protected:
 	//Scene2
 	HeightMap* hellMountain;
 	SceneNode* portalQuad2;
+	ParticleEmitter* particleEmitter;
 
 
+	Portal* portal;
 
 	//Scene3
 
@@ -78,6 +87,6 @@ protected:
 	Font* font;
 	float time;
 	int fps;
-
+	SceneRender sceneOn;
 	
 };

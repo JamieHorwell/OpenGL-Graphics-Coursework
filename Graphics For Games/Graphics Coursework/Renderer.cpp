@@ -5,6 +5,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	camera = new Camera();
 	fps = 0;
 	time = 0;
+	sceneOn = SceneRender::Scene1;
 	skyBox = Mesh::GenerateQuad();
 	waterMesh = new HeightMap();
 	snowMountain = new HeightMap(TEXTUREDIR"snowMountain.raw");
@@ -12,6 +13,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	//add shaders and textures to our resourceManager
 	resources.addShader("basicShader", "TexturedVertex.glsl", "TexturedFragment.glsl");
+	resources.addShader("particleShader","TexturedVertex.glsl", "particleFragment.glsl");
 	resources.addShader("reflectShader", "FluidVertex.glsl", "reflectFragment.glsl");
 	resources.addShader("skyboxShader", "skyboxVertex.glsl", "skyboxFragment.glsl");
 	resources.addShader("mountainBlend", "BumpVertexPerlin.glsl", "mountainFragmentPerlin.glsl");
@@ -28,8 +30,6 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	reflectManager = new WaterReflectRefract(this);
 	reflectManager->createWaterBuffers();
 	
-	//Scene2 mesh + other setup
-	hellMountain = new HeightMap(TEXTUREDIR"landTest.raw");
 
 	//Scene1 textures
 	resources.addTexture("mountainSide.png");
@@ -39,15 +39,25 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	resources.addSkybox("snowSky","stormydays_bk.tga","stormydays_ft.tga","stormydays_up.tga","stormydays_dn.tga","stormydays_lf.tga","stormydays_rt.tga");
 	resources.addSkybox("hellSky","rusted_west.jpg","rusted_east.jpg","rusted_up.jpg","rusted_down.jpg","rusted_south.jpg","rusted_north.jpg");
 
-	//Scene2 mesh + other setup
-	portalQuad2 = new SceneNode(Mesh::GenerateQuad());
-	portalQuad2->SetModelScale(Vector3(200,200,1));
+	
 
 	//Scene2 textures
 	resources.addTexture("lava.png");
 	resources.addTexture("Barren Reds.jpg");
 	resources.addTexture("Barren RedsDOT3.JPG");
 	resources.addTexture("hellMountainTop.JPG");
+	resources.addTexture("HellMountainBump.png");
+	resources.addTexture("eruptionParticle.JPG");
+
+	//Scene2 mesh + other setup
+	hellMountain = new HeightMap(TEXTUREDIR"landTest.raw");
+	particleEmitter = new ParticleEmitter(this, resources.getShader("particleShader"), resources.getTexture("eruptionParticle.JPG"), 5000, 100, -400, 6000, Vector3(2100,2100,7000));
+	portalQuad2 = new SceneNode(Mesh::GenerateQuad());
+	portalQuad2->SetModelScale(Vector3(200, 200, 1));
+	portalQuad2->SetTransform(Matrix4::Translation(Vector3(4700, 1000, 5200)));
+	portalQuad2->SetTransform(portalQuad2->GetTransform() * Matrix4::Rotation(90, Vector3(0, 1, 0)));
+	portal = new Portal(this);
+
 
 	//perlin texture to sample gradients from
 	resources.addTexture("noiseSampler.png");
@@ -65,11 +75,16 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	//set our textures
 	snowMountain->SetTexture(resources.getTexture("mountainSide.png"));
 	snowMountain->SetBumpMap(resources.getTexture("mountainSideBumpNew.png"));
+	snowMountain->SetTopTex(resources.getTexture("snow7_d.jpg"));
+	snowMountain->SetTopTexBump(resources.getTexture("snow7_local.jpg"));
+	hellMountain->SetTopTex(resources.getTexture("hellMountainTop.JPG"));
+	hellMountain->SetTopTexBump(resources.getTexture("HellMountainBump.png"));
+
 	portalQuad->GetMesh()->SetTexture(resources.getTexture("lava.png"));
 	hellMountain->SetTexture(resources.getTexture("Barren Reds.jpg"));
 	
 	projMatrix = Matrix4::Perspective(1.0f, 15000.0f, (float)width / (float)height, 45.0f);
-	mainLight = new Light(Vector3(3000, 8500.0f, 3000), Vector4(1,1,1,1), 50000);
+	mainLight = new Light(Vector3(3000, 5400.0f, 3000), Vector4(1,1,1,1), 20000);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -84,34 +99,70 @@ Renderer::~Renderer() {
 }
 
 void Renderer::RenderScene() {
-	RenderScene1();
-	RenderScene2();
-	RenderScene3();
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	switch (sceneOn) {
+		case SceneRender::Scene1:
+			RenderScene1();
+			break;
+		case SceneRender::Scene2:
+			RenderScene2();
+			break;
+		case SceneRender::Scene3:
+
+			break;
+	}
+	DrawTextOrth(std::to_string(fps), Vector3(0, 0, 0), 15);
+	std::string pos = "x:" + to_string((camera->GetPosition().x)) + "  y:" + to_string((camera->GetPosition().x)) + "   z" + to_string((camera->GetPosition().z));
+	DrawTextOrth(pos, Vector3(0, 20, 0), 15);
+	SwapBuffers();
 }
 
 void Renderer::UpdateScene(float msec) {
+	///////SCENE INDEPENDENT UPDATING///////
+	camera->SetPrevPos(camera->GetPosition());
 	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
 	time += msec;
 	fps = 1 / (msec / 1000);
+
+	//////SCENE SPECIFIC UPDATING////////
+	switch (sceneOn) {
+	case SceneRender::Scene1:
+		if (portal->portal_intersection(camera->getPrevPos(), camera->GetPosition(), portalQuad)) {
+			Vector4 newCamPos = Matrix4::Inverse(portal->getPortalView(viewMatrix,portalQuad,portalQuad2)) * Vector4(0,0,0,1);
+			//extract rotation from viewmatrix too?
+			camera->SetPosition(Vector3(newCamPos.x,newCamPos.y,newCamPos.z));
+			sceneOn = SceneRender::Scene2;
+		}
+		break;
+	case SceneRender::Scene2:
+		//check for other portal intersection
+		particleEmitter->updateParticles(msec);
+		break;
+	case SceneRender::Scene3:
+
+		break;
+	}
+	
+	
 }
 
 void Renderer::RenderScene1()
 {
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	
+
 	//DRAW OUR SCENE FROM REFLECTION PERSPECTIVE
 	glEnable(GL_CLIP_DISTANCE0);
-	reflectManager->cameraReflectionPos(camera, viewMatrix);
+	reflectManager->cameraReflectionPos(*camera, viewMatrix);
 	reflectManager->setPlaneToClip(150, true);
-	UpdateShaderMatrices();
 	bindFramebuffer(reflectManager->getReflectionFBO());
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	RenderSkyBox(resources.getSkybox("snowSky"));
 	RenderHeightMap(snowMountain);
 	RenderPortal();
 
-	//DRAW OUR SCENE FROM REFRACTION PERSPECTIVE
-	reflectManager->resetCamera(camera, viewMatrix);
+	////DRAW OUR SCENE FROM REFRACTION PERSPECTIVE
+	reflectManager->resetCamera(*camera, viewMatrix);
 	reflectManager->setPlaneToClip(150, false);
 	UpdateShaderMatrices();
 	bindFramebuffer(reflectManager->getRefractionFBO());
@@ -119,22 +170,26 @@ void Renderer::RenderScene1()
 	RenderSkyBox(resources.getSkybox("snowSky"));
 	RenderHeightMap(snowMountain);
 
+	
 	//DRAW OUR SCENE NORMALLY
 	glDisable(GL_CLIP_DISTANCE0);
 	reflectManager->setPlaneToClip(1500000, true);
 	bindScreenbuffer();
 	RenderSkyBox(resources.getSkybox("snowSky"));
+	portal->renderFromPortalView(portalQuad,portalQuad2);
 	RenderHeightMap(snowMountain);
 	RenderPortal();
 	RenderWater();
-	DrawTextOrth(std::to_string(fps), Vector3(0, 0, 0));
-	SwapBuffers();
+	
+	
 }
 
 void Renderer::RenderScene2()
 {
 	RenderSkyBox(resources.getSkybox("hellSky"));
 	RenderHeightMap(hellMountain);
+	particleEmitter->renderParticles();
+	
 }
 
 void Renderer::RenderScene3()
@@ -152,6 +207,7 @@ void Renderer::RenderSkyBox(GLuint skyboxTex)
 	glBindTexture(GL_TEXTURE_CUBE_MAP,skyboxTex);
 
 	UpdateShaderMatrices();
+	
 	skyBox->Draw();
 
 	glUseProgram(0);
@@ -226,10 +282,10 @@ void Renderer::RenderHeightMap(HeightMap* heightMap)
 
 	//top of mountain texture
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D,resources.getTexture("snow7_d.jpg"));
+	glBindTexture(GL_TEXTURE_2D,heightMap->GetTopTex());
 	//also bind normal for toptexture
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, resources.getTexture("snow7_local.jpg"));
+	glBindTexture(GL_TEXTURE_2D,heightMap->GetTopTexBump());
 
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, resources.getTexture("noiseSampler.png"));
@@ -257,6 +313,11 @@ void Renderer::RenderPortal()
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*Matrix4::Scale(portalQuad->GetModelScale())));
 
 	portalQuad->Draw();
+
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*Matrix4::Scale(portalQuad2->GetModelScale())));
+
+	portalQuad2->Draw();
 
 	glUseProgram(0);
 	UpdateShaderMatrices();

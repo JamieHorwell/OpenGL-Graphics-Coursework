@@ -55,10 +55,20 @@ public:
 
 	void invertPitch() { pitch = -pitch; };
 
+	Matrix4 getPrevCamMatrix() { return prevCamMatrix; };
+	void setPrevCamMatrix(Matrix4 prevMatrix) {this->prevCamMatrix = prevMatrix;};
+
+
+	Vector3 getPrevPos() { return prevPosition; };
+	void SetPrevPos(Vector3 prevPos) { this->prevPosition = prevPos; };
+
 protected:
 	float	yaw;
 	float	pitch;
 	Vector3 position;
+	Vector3 prevPosition;
 
 	float moveSpeed = 0.2f;
+
+	Matrix4 prevCamMatrix;
 };

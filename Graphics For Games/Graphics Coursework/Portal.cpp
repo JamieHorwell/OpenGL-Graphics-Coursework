@@ -1,9 +1,10 @@
 #include "Portal.h"
 #include "Renderer.h"
+#include "../../nclgl/Matrix3.h"
 
-
-Portal::Portal()
+Portal::Portal(Renderer* renderer)
 {
+	this->renderer = renderer;
 }
 
 
@@ -21,18 +22,56 @@ Matrix4 Portal::getPortalView(Matrix4 originalView, SceneNode * portalSrc, Scene
 	Matrix4 portalCam = mv * Matrix4::Rotation(180, Vector3(0, 1, 0)) *  Matrix4::Inverse(portalDest->GetTransform());
 
 	return portalCam;
-	//return cameraStart;
+	
 }
 
 
 int Portal::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal)
 {
-	//cameraviews arent in same position
+	//cameraviews arent in same position (camera has moved)
 	if (pos1 != pos2) {
-		for (int i = 0; i < 2; ++i) {
+		
+			Vector3 p0 = portal->GetTransform() * portal->GetMesh()->getVertice(0);
+			Vector3 p1 = portal->GetTransform() * portal->GetMesh()->getVertice(1);
+			Vector3 p2 = portal->GetTransform() * portal->GetMesh()->getVertice(2);
+			Vector3 p3 = portal->GetTransform() * portal->GetMesh()->getVertice(3);
+	
+			Matrix3 temp;
+			temp.SetColumn(0,Vector3(pos1.x - pos2.x, pos1.y - pos2.y,pos1.z - pos2.z));
+			temp.SetColumn(1, Vector3(p1.x - p0.x, p1.y - p0.y, p1.z - p0.z));
+			temp.SetColumn(2, Vector3(p2.x - p0.x, p2.y - p0.y, p2.z - p0.z));
 
-		}
+			/*temp.SetRow(0, Vector3(pos1.x - pos2.x, pos1.y - pos2.y, pos1.z - pos2.z));
+			temp.SetRow(1, Vector3(p1.x - p0.x, p1.y - p0.y, p1.z - p0.z));
+			temp.SetRow(2, Vector3(p2.x - p0.x, p2.y - p0.y, p2.z - p0.z));*/
 
+
+			temp = Matrix3::Inverse(temp);
+			Vector3 tuv = temp * Vector3(pos1.x - p0.x, pos1.y - p0.y, pos1.z - p0.z);
+			
+			//intersection with the plane
+			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 50.16) {
+				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 50.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 50.16 ) {
+				std::cout << "!!!!!!";
+					return 1;
+				}
+
+			}
+
+			//now check for intersection with other triangle
+			temp.SetColumn(0, Vector3(pos1.x - pos2.x, pos1.y - pos2.y, pos1.z - pos2.z));
+			temp.SetColumn(1, Vector3(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z));
+			temp.SetColumn(2, Vector3(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z));
+			temp = Matrix3::Inverse(temp);
+
+			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 50.16) {
+				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 50.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 50.16) {
+					std::cout << "!!!!!!";
+					return 1;
+				}
+
+			}
+			
 	}
 
 	return 0;
@@ -40,6 +79,7 @@ int Portal::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal)
 
 void Portal::renderFromPortalView(SceneNode * portalSrc, SceneNode * portalDest)
 {
+	
 	//1. disable color and depth draw, enable writing to stencil buffer
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 	glDepthMask(GL_FALSE);
@@ -52,19 +92,22 @@ void Portal::renderFromPortalView(SceneNode * portalSrc, SceneNode * portalDest)
 	glStencilFunc(GL_NEVER, 0, 0xFF);
 
 	//3. increment stencil value on stencil fail
-	glStencilOp(GL_INCR, GL_KEEP, GL_KEEP);  // increment stencil value on stencil fail
+	glStencilOp(GL_INCR, GL_KEEP, GL_KEEP);  
 
 
-											 //4. draw our portal, which will fill inside of portal frame with 1s
+	//4. draw our portal, which will fill inside of portal frame with 1s
 	renderer->SetCurrentShader(renderer->getResources()->getShader("basicShader"));
-	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*Matrix4::Scale(portalQuad->GetModelScale())));
-	portalQuad->Draw();
+	renderer->UpdateShaderMatrices();
+	glUniformMatrix4fv(glGetUniformLocation(renderer->getCurrentShader()->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalSrc->GetTransform()*Matrix4::Scale(portalSrc->GetModelScale())));
+	portalSrc->Draw();
 
 
 	//5. now get viewmatrix from portal
-	Matrix4 tempViewHolder = viewMatrix;
-	viewMatrix = getPortalView(viewMatrix, portalQuad, portalQuad2);
-	UpdateShaderMatrices();
+	Matrix4 tempViewHolder = renderer->getViewMatrix();
+	//std::cout << "VIEWMATRIX AT PORTAL RENDERING" << tempViewHolder << "\n\n";
+	renderer->setViewMatrix(getPortalView(renderer->getViewMatrix(), portalSrc, portalDest));
+	
+	renderer->UpdateShaderMatrices();
 
 	//6. enable color and depth drawing, disable writing to stencil buffer
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -72,16 +115,13 @@ void Portal::renderFromPortalView(SceneNode * portalSrc, SceneNode * portalDest)
 	glStencilMask(0x00);
 
 	//7. stencil function to GL_LEQUAL, only draw where stencil has been incremented, so where the portal frame is
-	glStencilFunc(GL_LEQUAL, 1, 0xff);
+	glStencilFunc(GL_EQUAL, 1, 0xff);
 
 	//8. draw rest of scene from portalView ( as weve changed viewmatrix in OGLRenderer
-	DrawSkybox();
-	DrawHeightmap();
-	//DrawPortal();
-	DrawWater();
+	renderer->RenderScene2();
 
 	//reset view 
-	viewMatrix = tempViewHolder;
+	renderer->setViewMatrix(tempViewHolder); 
 
 	//9. disable stencil test, color buffer drawing, enable depth drawing
 	glDisable(GL_STENCIL_TEST);
@@ -92,15 +132,19 @@ void Portal::renderFromPortalView(SceneNode * portalSrc, SceneNode * portalDest)
 	//10. clear depth buffer
 	glClear(GL_DEPTH_BUFFER_BIT);
 	//11. draw quad to depth buffer
-	SetCurrentShader(lightShader);
-	UpdateShaderMatrices();
-	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*Matrix4::Scale(portalQuad->GetModelScale())));
-	portalQuad->Draw();
+	renderer->SetCurrentShader(renderer->getResources()->getShader("basicShader"));
+	renderer->UpdateShaderMatrices();
+	glUniformMatrix4fv(glGetUniformLocation(renderer->getCurrentShader()->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalSrc->GetTransform()*Matrix4::Scale(portalSrc->GetModelScale())));
+	portalSrc->Draw();
 	glUseProgram(0);
 
 	//12. enable color buffer
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-	UpdateShaderMatrices();
+	renderer->UpdateShaderMatrices();
+}
+
+void Portal::teleport(Matrix4 prevCam, Matrix4 currentCam)
+{
 
 }

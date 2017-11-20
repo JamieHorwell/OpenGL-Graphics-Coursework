@@ -83,7 +83,7 @@ void main(void)	{
 	float n = noise(vec3(position.x + time / 20,position.z + time / 20,time / 20)/ 170.0) / 1.0 + noise(vec3(position.x + time / 10,position.z + time / 10,time / 10)/64.0) / 2.0
 	+ noise(vec3(position.x + time / 7,position.z + time / 7,time / 7)/32.0) / 16.0;
 	vec3 newPos = position;
-	newPos.y += n * 25;
+	newPos.y += n * 35;
 	
 
 	OUT.colour = colour;

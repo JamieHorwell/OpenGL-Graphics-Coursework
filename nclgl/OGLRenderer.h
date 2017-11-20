@@ -125,10 +125,20 @@ public:
 	int getHeight() { return height; };
 
 	void			SetCurrentShader(Shader*s);
+	Shader* getCurrentShader() { return currentShader; };
+
+	Matrix4 getViewMatrix() { return viewMatrix; };
+	Matrix4 getModelMatrix() { return modelMatrix; };
+	Matrix4 getTextureMatrix() { return textureMatrix; };
+	Matrix4 getProjMatrix() { return projMatrix; };
+
+	void setViewMatrix(Matrix4 viewMat) { this->viewMatrix = viewMat; };
+
+	void			UpdateShaderMatrices();
 
 protected:
 	virtual void	Resize(int x, int y);	
-	void			UpdateShaderMatrices();
+	
 	
 
 	void			SetTextureRepeating(GLuint target, bool state);

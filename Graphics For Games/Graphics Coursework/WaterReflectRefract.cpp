@@ -23,21 +23,21 @@ void WaterReflectRefract::setPlaneToClip(float height, bool reflect)
 }
 
 
-void WaterReflectRefract::cameraReflectionPos(Camera* camera, Matrix4& viewMat)
+void WaterReflectRefract::cameraReflectionPos(Camera& camera, Matrix4& viewMat)
 {
-	savedCamDist  = 2 * (camera->GetPosition().y - 150);
-	camera->invertPitch();
-	camera->SetPosition(camera->GetPosition() - Vector3(0, savedCamDist, 0));
+	savedCamDist  = 2 * (camera.GetPosition().y - 150);
+	camera.invertPitch();
+	camera.SetPosition(camera.GetPosition() - Vector3(0, savedCamDist, 0));
 
-	viewMat = camera->BuildViewMatrix();
+	viewMat = camera.BuildViewMatrix();
 }
 
-void WaterReflectRefract::resetCamera(Camera * camera, Matrix4 & viewMat)
+void WaterReflectRefract::resetCamera(Camera& camera, Matrix4 & viewMat)
 {
-	camera->invertPitch();
-	camera->SetPosition(camera->GetPosition() + Vector3(0, savedCamDist, 0));
+	camera.invertPitch();
+	camera.SetPosition(camera.GetPosition() + Vector3(0, savedCamDist, 0));
 
-	viewMat = camera->BuildViewMatrix();
+	viewMat = camera.BuildViewMatrix();
 }
 
 

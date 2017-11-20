@@ -40,7 +40,7 @@ diffuse2 = texture (topTex, IN.texCoord);
 bump1 = texture(diffuseTexBump, IN.texCoord);
 bump2 = texture(topTexBump, IN.texCoord);
 
-float yValue = (IN.worldPos.y - 1500 + (IN.noise* 800)) / 150;
+float yValue = (IN.worldPos.y - 700 + (IN.noise* 800)) / 150;
 yValue = clamp(yValue, 0.0, 1.0);
 
 diffuse = mix(diffuse1,diffuse2,yValue);

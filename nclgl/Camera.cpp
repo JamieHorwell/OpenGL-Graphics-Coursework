@@ -23,6 +23,7 @@ void Camera::UpdateCamera(float msec)	{
 
 	msec *= 5.0f;
 
+	moveSpeed = 0.2f; 
 	if(Window::GetKeyboard()->KeyDown(KEYBOARD_W)) {
 		position += Matrix4::Rotation(yaw, Vector3(0,1,0)) * Vector3(0,0,-moveSpeed) * msec;
 	}

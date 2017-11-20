@@ -23,5 +23,15 @@ public:
 	HeightMap(std::string name);
 	HeightMap();
 	~HeightMap();
+
+	GLuint GetTopTex() { return topTex; };
+	void SetTopTex(GLuint topTex) { this->topTex = topTex; };
+
+	GLuint GetTopTexBump() { return topTexBump; };
+	void SetTopTexBump(GLuint topTexBump) { this->topTexBump = topTex; };
+
+protected:
+	GLuint topTex;
+	GLuint topTexBump;
 };
 

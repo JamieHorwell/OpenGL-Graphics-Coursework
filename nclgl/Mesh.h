@@ -22,6 +22,8 @@ public:
 	GLuint GetBumpMap() { return bumpTexture; };
 
 
+	Vector3 getVertice(int index) { return vertices[index]; };
+
 protected:
 	void BufferData();
 	//rebuffer data

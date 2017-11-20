@@ -36,5 +36,7 @@ public:
 	float y;
 	float z;
 	float w;
+
+	inline bool	operator!=(const Vector4 &A)const { return (A.x == x && A.y == y && A.z == z && A.w == w) ? false : true; };
 };
 
