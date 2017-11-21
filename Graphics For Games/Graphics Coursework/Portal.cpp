@@ -50,8 +50,8 @@ int Portal::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal)
 			Vector3 tuv = temp * Vector3(pos1.x - p0.x, pos1.y - p0.y, pos1.z - p0.z);
 			
 			//intersection with the plane
-			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 50.16) {
-				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 50.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 50.16 ) {
+			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 40.16) {
+				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 50.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 40.16 ) {
 				std::cout << "!!!!!!";
 					return 1;
 				}
@@ -64,8 +64,8 @@ int Portal::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal)
 			temp.SetColumn(2, Vector3(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z));
 			temp = Matrix3::Inverse(temp);
 
-			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 50.16) {
-				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 50.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 50.16) {
+			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 40.16) {
+				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 50.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 40.16) {
 					std::cout << "!!!!!!";
 					return 1;
 				}

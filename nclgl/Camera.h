@@ -38,6 +38,8 @@ public:
 	//to a vertex shader (i.e it's already an 'inverse camera matrix').
 	Matrix4 BuildViewMatrix();
 
+	Matrix4 BuildViewMatrixNoRotation();
+
 	//Gets position in world space
 	Vector3 GetPosition() const { return position;}
 	//Sets position in world space

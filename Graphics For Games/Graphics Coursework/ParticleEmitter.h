@@ -13,7 +13,7 @@ struct Particle {
 class ParticleEmitter
 {
 public:
-	ParticleEmitter(Renderer* renderer, Shader* particleShader, GLuint particleTex, int maxParticles, int particleOutput, float gravity, float lifeTime, Vector3 emitLocation);
+	ParticleEmitter(Renderer* renderer, Shader* particleShader, GLuint particleTex, int maxParticles, int particleOutput, float gravity, float lifeTime, Vector3 emitLocation, Vector3 pSize);
 	~ParticleEmitter();
 
 	//loop through all particles, render them
@@ -27,6 +27,10 @@ public:
 
 	void setRenderer(Renderer* renderer) { this->renderer = renderer; };
 
+	Vector3 generateRandomDirection();
+
+	Matrix4 particleModelView(Particle & p);
+
 
 protected: 
 	Mesh* particleMesh;
@@ -39,6 +43,7 @@ protected:
 	int particleOutputRate;
 	int maxParticles;
 	Vector3 emitterStart;
+	Vector3 particleSize;
 
 	Renderer* renderer;
 

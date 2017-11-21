@@ -9,6 +9,7 @@
 #include "WaterReflectRefract.h"
 #include "Portal.h"
 #include "ParticleEmitter.h"
+#include "CameraTrail.h"
 
 
 enum class SceneRender { Scene1, Scene2, Scene3 };
@@ -41,6 +42,8 @@ public:
 protected:
 	ResourceManager resources;
 	Camera* camera;
+	CameraTrail* camTrail;
+	bool freeCam;
 
 
 	//specific rendering
@@ -66,7 +69,7 @@ protected:
 
 	Mesh* reflectionTest;
 	Mesh* refractionTest;
-	Mesh* waterQuad;
+	
 
 	WaterReflectRefract* reflectManager;
 
@@ -76,6 +79,8 @@ protected:
 	SceneNode* portalQuad2;
 	ParticleEmitter* particleEmitter;
 
+	//Scene2 RenderMethods
+	void renderLava();
 
 	Portal* portal;
 

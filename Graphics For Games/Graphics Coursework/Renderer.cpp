@@ -3,6 +3,7 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	camera = new Camera();
+	camTrail = new CameraTrail(camera);
 	fps = 0;
 	time = 0;
 	sceneOn = SceneRender::Scene1;
@@ -13,15 +14,15 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	//add shaders and textures to our resourceManager
 	resources.addShader("basicShader", "TexturedVertex.glsl", "TexturedFragment.glsl");
-	resources.addShader("particleShader","TexturedVertex.glsl", "particleFragment.glsl");
+	resources.addShader("particleShader","ParticleVertex.glsl", "particleFragment.glsl");
 	resources.addShader("reflectShader", "FluidVertex.glsl", "reflectFragment.glsl");
+	resources.addShader("lavaShader", "lavaVertex.glsl", "lavaFragment.glsl");
 	resources.addShader("skyboxShader", "skyboxVertex.glsl", "skyboxFragment.glsl");
 	resources.addShader("mountainBlend", "BumpVertexPerlin.glsl", "mountainFragmentPerlin.glsl");
 
 
 
 	//Scene1 mesh + other setup
-	waterQuad = Mesh::GenerateQuad();
 	reflectionTest = Mesh::GenerateQuad();
 	refractionTest = Mesh::GenerateQuad();
 	portalQuad = new SceneNode(Mesh::GenerateQuad());
@@ -43,6 +44,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	//Scene2 textures
 	resources.addTexture("lava.png");
+	resources.addTexture("lavaBump.png");
 	resources.addTexture("Barren Reds.jpg");
 	resources.addTexture("Barren RedsDOT3.JPG");
 	resources.addTexture("hellMountainTop.JPG");
@@ -51,7 +53,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	//Scene2 mesh + other setup
 	hellMountain = new HeightMap(TEXTUREDIR"landTest.raw");
-	particleEmitter = new ParticleEmitter(this, resources.getShader("particleShader"), resources.getTexture("eruptionParticle.JPG"), 5000, 100, -400, 6000, Vector3(2100,2100,7000));
+	particleEmitter = new ParticleEmitter(this, resources.getShader("particleShader"), resources.getTexture("eruptionParticle.JPG"), 5000, 100, -300, 6000, Vector3(2100,1900,7000), Vector3(15,15,15));
 	portalQuad2 = new SceneNode(Mesh::GenerateQuad());
 	portalQuad2->SetModelScale(Vector3(200, 200, 1));
 	portalQuad2->SetTransform(Matrix4::Translation(Vector3(4700, 1000, 5200)));
@@ -79,12 +81,13 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	snowMountain->SetTopTexBump(resources.getTexture("snow7_local.jpg"));
 	hellMountain->SetTopTex(resources.getTexture("hellMountainTop.JPG"));
 	hellMountain->SetTopTexBump(resources.getTexture("HellMountainBump.png"));
-
+	waterMesh->SetTexture(resources.getTexture("lava.png"));
+	waterMesh->SetBumpMap(resources.getTexture("lavaBump.png"));
 	portalQuad->GetMesh()->SetTexture(resources.getTexture("lava.png"));
 	hellMountain->SetTexture(resources.getTexture("Barren Reds.jpg"));
 	
 	projMatrix = Matrix4::Perspective(1.0f, 15000.0f, (float)width / (float)height, 45.0f);
-	mainLight = new Light(Vector3(3000, 5400.0f, 3000), Vector4(1,1,1,1), 20000);
+	mainLight = new Light(Vector3(3000, 5400.0f, 3000), Vector4(1,1,1,1), 50000);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -112,15 +115,18 @@ void Renderer::RenderScene() {
 			break;
 	}
 	DrawTextOrth(std::to_string(fps), Vector3(0, 0, 0), 15);
-	std::string pos = "x:" + to_string((camera->GetPosition().x)) + "  y:" + to_string((camera->GetPosition().x)) + "   z" + to_string((camera->GetPosition().z));
+	std::string pos = "x:" + to_string((camera->GetPosition().x)) + "  y:" + to_string((camera->GetPosition().y)) + "   z" + to_string((camera->GetPosition().z));
 	DrawTextOrth(pos, Vector3(0, 20, 0), 15);
+	std::string rot = "pitch:" + to_string(camera->GetPitch()) + "  yaw:" + to_string(camera->GetYaw());
+	DrawTextOrth(rot, Vector3(0,40,0), 15);
 	SwapBuffers();
 }
 
 void Renderer::UpdateScene(float msec) {
 	///////SCENE INDEPENDENT UPDATING///////
 	camera->SetPrevPos(camera->GetPosition());
-	camera->UpdateCamera(msec);
+	camTrail->Update(msec);
+	//camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
 	time += msec;
 	fps = 1 / (msec / 1000);
@@ -188,6 +194,7 @@ void Renderer::RenderScene2()
 {
 	RenderSkyBox(resources.getSkybox("hellSky"));
 	RenderHeightMap(hellMountain);
+	renderLava();
 	particleEmitter->renderParticles();
 	
 }
@@ -366,6 +373,30 @@ void Renderer::DrawTextOrth(const std::string &text, const Vector3 &position, co
 
 	delete mesh; //Once it's drawn, we don't need it anymore!
 	projMatrix = projMatTemp;
+	glUseProgram(0);
+}
+
+void Renderer::renderLava()
+{
+	SetCurrentShader(resources.getShader("lavaShader"));
+	SetShaderLight(*mainLight);
+
+	glUniform1f(glGetUniformLocation(currentShader->GetProgram(), "time"), time);
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "bumpTex"), 1);
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "perlinTex"), 2);
+	modelMatrix = Matrix4::Translation(Vector3(0, 150, 0));
+	UpdateShaderMatrices();
+
+	glActiveTexture(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, resources.getTexture("noiseSampler.png"));
+
+
+	waterMesh->Draw();
+	modelMatrix = Matrix4::Translation(Vector3(0, 150, 0));
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glUseProgram(0);
 }
 

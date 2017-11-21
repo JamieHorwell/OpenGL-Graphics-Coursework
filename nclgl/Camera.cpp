@@ -39,10 +39,10 @@ void Camera::UpdateCamera(float msec)	{
 	}
 
 	if(Window::GetKeyboard()->KeyDown(KEYBOARD_SHIFT)) {
-		position.y += msec;
+		position.y += msec/2;
 	}
 	if(Window::GetKeyboard()->KeyDown(KEYBOARD_SPACE)) {
-		position.y -= msec;
+		position.y -= msec/2;
 	}
 }
 
@@ -56,4 +56,9 @@ Matrix4 Camera::BuildViewMatrix()	{
 	return	Matrix4::Rotation(-pitch, Vector3(1,0,0)) * 
 			Matrix4::Rotation(-yaw, Vector3(0,1,0)) * 
 			Matrix4::Translation(-position);
-};
+}
+Matrix4 Camera::BuildViewMatrixNoRotation()
+{
+	return Matrix4::Translation(-position) * Matrix4::Rotation(0, Vector3(1,0,0)) * Matrix4::Rotation(0, Vector3(0,1,0));
+}
+
