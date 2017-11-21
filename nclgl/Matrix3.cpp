@@ -118,7 +118,7 @@ void	Matrix3::ToZero() {
 
 void	Matrix3::ToIdentity() {
 	for (int i = 0; i < 9; ++i) {
-		values[0] = 0.0f;
+		values[i] = 0.0f;
 	}
 	values[0] = 1.0f;
 	values[4] = 1.0f;

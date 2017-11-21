@@ -34,9 +34,10 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	//s->SetModelScale(Vector3(100.0f, 100.0f, 100.0f));
 	s->SetBoundingRadius(10000.0f);
 	
-	s->SetMesh(new HeightMap(TEXTUREDIR"terrain.raw"));
+	s->SetMesh(new OBJMesh(MESHDIR"Ball OBJ.obj"));
+	s->SetModelScale(Vector3(100, 100, 100));
 	s->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"brick.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0));
-	SetTextureRepeating(s->GetMesh()->GetTexture(), false);
+	SetTextureRepeating(s->GetMesh()->GetTexture(), true);
 	root->AddChild(s);
 
 	root->AddChild(new CubeRobot());

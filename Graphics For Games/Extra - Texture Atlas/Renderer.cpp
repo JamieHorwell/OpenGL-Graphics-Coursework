@@ -21,7 +21,7 @@ of the code, by hiding the transform
 To show off the texture atlas, we're going to add 4 textures to one texture
 atlas. These 4!
 */
-string textures[4] = {
+std::string textures[4] = {
 	TEXTUREDIR"brick.tga",
 	TEXTUREDIR"Barren reds.jpg",
 	TEXTUREDIR"hellknight.tga",

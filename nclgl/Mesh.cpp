@@ -86,7 +86,7 @@ Mesh * Mesh::GenerateTriangle()
 	m->colours[0] = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 	m->colours[1] = Vector4(0.0f, 1.0f, 0.0f, 1.0f);
 	m->colours[2] = Vector4(0.0, 0.0f, 1.0f, 1.0f);
-
+	
 	m->BufferData();
 	return m;
 }

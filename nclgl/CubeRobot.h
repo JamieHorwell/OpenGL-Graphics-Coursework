@@ -12,7 +12,7 @@ public:
 
 	static void CreateCube() {
 		OBJMesh * m = new OBJMesh();
-		m->LoadOBJMesh(MESHDIR"cube.obj");
+		m->LoadOBJMesh(MESHDIR"Ball OBJ.obj");
 		cube = m;
 		OBJMesh* headObj = new OBJMesh();
 		headObj->LoadOBJMesh(MESHDIR"cube.obj");

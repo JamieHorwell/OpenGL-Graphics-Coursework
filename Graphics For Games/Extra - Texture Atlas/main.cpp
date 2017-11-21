@@ -1,7 +1,7 @@
 #pragma comment(lib, "nclgl.lib")
 #pragma comment(lib, "glu32.lib")
 
-#include "./NCLGL/window.h"
+#include "../NCLGL/window.h"
 #include "Renderer.h"
 
 int main() {

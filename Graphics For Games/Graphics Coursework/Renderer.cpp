@@ -26,7 +26,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	reflectionTest = Mesh::GenerateQuad();
 	refractionTest = Mesh::GenerateQuad();
 	portalQuad = new SceneNode(Mesh::GenerateQuad());
-	portalQuad->SetModelScale(Vector3(200,200,1));
+	portalQuad->SetModelScale(Vector3(200,300,1));
 	portalQuad->SetTransform(Matrix4::Translation(Vector3(3700,540,5400)));
 	reflectManager = new WaterReflectRefract(this);
 	reflectManager->createWaterBuffers();
@@ -55,8 +55,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	hellMountain = new HeightMap(TEXTUREDIR"landTest.raw");
 	particleEmitter = new ParticleEmitter(this, resources.getShader("particleShader"), resources.getTexture("eruptionParticle.JPG"), 5000, 100, -300, 6000, Vector3(2100,1900,7000), Vector3(15,15,15));
 	portalQuad2 = new SceneNode(Mesh::GenerateQuad());
-	portalQuad2->SetModelScale(Vector3(200, 200, 1));
-	portalQuad2->SetTransform(Matrix4::Translation(Vector3(4700, 1000, 5200)));
+	portalQuad2->SetModelScale(Vector3(200, 300, 1));
+	portalQuad2->SetTransform(Matrix4::Translation(Vector3(4700, 3000, 5200)));
 	portalQuad2->SetTransform(portalQuad2->GetTransform() * Matrix4::Rotation(90, Vector3(0, 1, 0)));
 	portal = new Portal(this);
 
@@ -70,6 +70,10 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	//set some of our textures to be repeating
 	SetTextureRepeating(resources.getTexture("mountainSide.png"), TRUE);
 	SetTextureRepeating(resources.getTexture("mountainSideBumpNew.png"), TRUE);
+	SetTextureRepeating(resources.getTexture("hellMountainTop.JPG"), TRUE);
+	SetTextureRepeating(resources.getTexture("HellMountainBump.png"), TRUE);
+	SetTextureRepeating(resources.getTexture("Barren Reds.jpg"), TRUE);
+	SetTextureRepeating(resources.getTexture("Barren RedsDOT3.JPG"), TRUE);
 	SetTextureRepeating(resources.getTexture("snow7_d.jpg"), TRUE);
 	SetTextureRepeating(resources.getTexture("snow7_local.jpg"), TRUE);
 	SetTextureRepeating(resources.getTexture("lava.png"), TRUE);
@@ -79,8 +83,11 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	snowMountain->SetBumpMap(resources.getTexture("mountainSideBumpNew.png"));
 	snowMountain->SetTopTex(resources.getTexture("snow7_d.jpg"));
 	snowMountain->SetTopTexBump(resources.getTexture("snow7_local.jpg"));
+	hellMountain->SetTexture(resources.getTexture("Barren Reds.jpg"));
+	hellMountain->SetBumpMap(resources.getTexture("Barren RedsDOT3.JPG"));
 	hellMountain->SetTopTex(resources.getTexture("hellMountainTop.JPG"));
 	hellMountain->SetTopTexBump(resources.getTexture("HellMountainBump.png"));
+
 	waterMesh->SetTexture(resources.getTexture("lava.png"));
 	waterMesh->SetBumpMap(resources.getTexture("lavaBump.png"));
 	portalQuad->GetMesh()->SetTexture(resources.getTexture("lava.png"));
@@ -105,10 +112,10 @@ void Renderer::RenderScene() {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	switch (sceneOn) {
 		case SceneRender::Scene1:
-			RenderScene1();
+			RenderScene1(true);
 			break;
 		case SceneRender::Scene2:
-			RenderScene2();
+			RenderScene2(true);
 			break;
 		case SceneRender::Scene3:
 
@@ -144,6 +151,14 @@ void Renderer::UpdateScene(float msec) {
 	case SceneRender::Scene2:
 		//check for other portal intersection
 		particleEmitter->updateParticles(msec);
+		if (portal->portal_intersection(camera->getPrevPos(), camera->GetPosition(), portalQuad2)) {
+			Vector4 newCamPos = Matrix4::Inverse(portal->getPortalView(viewMatrix, portalQuad2, portalQuad)) * Vector4(0, 0, 0, 1);
+			//extract rotation from viewmatrix too?
+			camera->SetPosition(Vector3(newCamPos.x, newCamPos.y, newCamPos.z));
+			sceneOn = SceneRender::Scene1;
+		}
+
+
 		break;
 	case SceneRender::Scene3:
 
@@ -153,22 +168,24 @@ void Renderer::UpdateScene(float msec) {
 	
 }
 
-void Renderer::RenderScene1()
+void Renderer::RenderScene1(bool renderPortal)
 {
 	
 
 	//DRAW OUR SCENE FROM REFLECTION PERSPECTIVE
 	glEnable(GL_CLIP_DISTANCE0);
-	reflectManager->cameraReflectionPos(*camera, viewMatrix);
+	if (renderPortal) reflectManager->cameraReflectionPos(*camera, viewMatrix);
 	reflectManager->setPlaneToClip(150, true);
 	bindFramebuffer(reflectManager->getReflectionFBO());
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	RenderSkyBox(resources.getSkybox("snowSky"));
+	if (renderPortal) portal->renderFromPortalView(portalQuad, portalQuad2, true, SceneRender::Scene2);
 	RenderHeightMap(snowMountain);
-	RenderPortal();
+	
 
-	////DRAW OUR SCENE FROM REFRACTION PERSPECTIVE
-	reflectManager->resetCamera(*camera, viewMatrix);
+
+	//DRAW OUR SCENE FROM REFRACTION PERSPECTIVE
+	if (renderPortal) reflectManager->resetCamera(*camera, viewMatrix);
 	reflectManager->setPlaneToClip(150, false);
 	UpdateShaderMatrices();
 	bindFramebuffer(reflectManager->getRefractionFBO());
@@ -182,17 +199,17 @@ void Renderer::RenderScene1()
 	reflectManager->setPlaneToClip(1500000, true);
 	bindScreenbuffer();
 	RenderSkyBox(resources.getSkybox("snowSky"));
-	portal->renderFromPortalView(portalQuad,portalQuad2);
+	if (renderPortal) portal->renderFromPortalView(portalQuad,portalQuad2, false, SceneRender::Scene2);
 	RenderHeightMap(snowMountain);
-	RenderPortal();
 	RenderWater();
 	
 	
 }
 
-void Renderer::RenderScene2()
+void Renderer::RenderScene2(bool renderPortal)
 {
 	RenderSkyBox(resources.getSkybox("hellSky"));
+	if(renderPortal) portal->renderFromPortalView(portalQuad2,portalQuad, false, SceneRender::Scene1);
 	RenderHeightMap(hellMountain);
 	renderLava();
 	particleEmitter->renderParticles();
@@ -406,6 +423,8 @@ void Renderer::createFBO(GLuint &FBOID)
 	glGenFramebuffers(1, &FBOID);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBOID);
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	glDrawBuffer(GL_DEPTH_ATTACHMENT);
+	glDrawBuffer(GL_STENCIL_ATTACHMENT);
 }
 
 void Renderer::createTexture(GLuint & TexID)
@@ -422,10 +441,11 @@ void Renderer::createDepthTexture(GLuint & TexID)
 {
 	glGenTextures(1, &TexID);
 	glBindTexture(GL_TEXTURE_2D, TexID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8_EXT, width, height, 0, GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, NULL);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, TexID, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, TexID, 0);
 }
 
 void Renderer::createDepthBufferAttachment(GLuint & depthBufferID)
@@ -436,10 +456,26 @@ void Renderer::createDepthBufferAttachment(GLuint & depthBufferID)
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufferID);
 }
 
+void Renderer::createStencilTexture(GLuint & TexID)
+{
+	glGenTextures(1, &TexID);
+	glBindTexture(GL_TEXTURE_2D, TexID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_STENCIL_COMPONENTS, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	
+}
+
+
+
+
+
 void Renderer::bindFramebuffer(GLuint fboID)
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
 void Renderer::bindScreenbuffer()

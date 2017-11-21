@@ -18,6 +18,9 @@ Matrix4 Portal::getPortalView(Matrix4 originalView, SceneNode * portalSrc, Scene
 	//modelview matrix of portal
 	Matrix4 mv = originalView * portalSrc->GetTransform();
 
+
+
+	
 	//need to invert portalDest
 	Matrix4 portalCam = mv * Matrix4::Rotation(180, Vector3(0, 1, 0)) *  Matrix4::Inverse(portalDest->GetTransform());
 
@@ -50,8 +53,8 @@ int Portal::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal)
 			Vector3 tuv = temp * Vector3(pos1.x - p0.x, pos1.y - p0.y, pos1.z - p0.z);
 			
 			//intersection with the plane
-			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 40.16) {
-				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 50.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 40.16 ) {
+			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 30.16) {
+				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 30.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 30.16 ) {
 				std::cout << "!!!!!!";
 					return 1;
 				}
@@ -64,8 +67,8 @@ int Portal::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal)
 			temp.SetColumn(2, Vector3(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z));
 			temp = Matrix3::Inverse(temp);
 
-			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 40.16) {
-				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 50.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 40.16) {
+			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 30.16) {
+				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 30.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 30.16) {
 					std::cout << "!!!!!!";
 					return 1;
 				}
@@ -77,7 +80,7 @@ int Portal::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal)
 	return 0;
 }
 
-void Portal::renderFromPortalView(SceneNode * portalSrc, SceneNode * portalDest)
+void Portal::renderFromPortalView(SceneNode * portalSrc, SceneNode * portalDest, bool reflection, SceneRender sceneToRender)
 {
 	
 	//1. disable color and depth draw, enable writing to stencil buffer
@@ -101,12 +104,13 @@ void Portal::renderFromPortalView(SceneNode * portalSrc, SceneNode * portalDest)
 	glUniformMatrix4fv(glGetUniformLocation(renderer->getCurrentShader()->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalSrc->GetTransform()*Matrix4::Scale(portalSrc->GetModelScale())));
 	portalSrc->Draw();
 
-
+	if (reflection) {
+		renderer->getReflectManager()->resetCamera(renderer->getCam(), renderer->getViewMatObj());
+	}
 	//5. now get viewmatrix from portal
 	Matrix4 tempViewHolder = renderer->getViewMatrix();
 	//std::cout << "VIEWMATRIX AT PORTAL RENDERING" << tempViewHolder << "\n\n";
 	renderer->setViewMatrix(getPortalView(renderer->getViewMatrix(), portalSrc, portalDest));
-	
 	renderer->UpdateShaderMatrices();
 
 	//6. enable color and depth drawing, disable writing to stencil buffer
@@ -118,10 +122,25 @@ void Portal::renderFromPortalView(SceneNode * portalSrc, SceneNode * portalDest)
 	glStencilFunc(GL_EQUAL, 1, 0xff);
 
 	//8. draw rest of scene from portalView ( as weve changed viewmatrix in OGLRenderer
-	renderer->RenderScene2();
+	switch (sceneToRender) {
+	case SceneRender::Scene1:
+		renderer->RenderScene1(false);
+		break;
+	case SceneRender::Scene2:
+		renderer->RenderScene2(false);
+		break;
+	}
+	
+
+	
+
 
 	//reset view 
 	renderer->setViewMatrix(tempViewHolder); 
+
+	if (reflection) {
+		renderer->getReflectManager()->cameraReflectionPos(renderer->getCam(), renderer->getViewMatObj());
+	}
 
 	//9. disable stencil test, color buffer drawing, enable depth drawing
 	glDisable(GL_STENCIL_TEST);

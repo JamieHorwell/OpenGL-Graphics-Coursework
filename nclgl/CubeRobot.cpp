@@ -9,9 +9,10 @@ CubeRobot::CubeRobot()
 	body->SetTransform(Matrix4::Translation(Vector3(0, 35, 0)));
 	AddChild(body);
 
-	head = new SceneNode(Mesh::GenerateQuad(), Vector4(0, 1, 0, 1));
-	head->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"gurp.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+	head = new SceneNode(cube, Vector4(0, 1, 0, 1));
+	head->GetMesh()->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"eruptionParticle.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 	head->GetMesh()->GetTexture();
+	
 
 	head->SetModelScale(Vector3(18,18,18));
 	head->SetTransform(Matrix4::Translation(Vector3(0,40,0)));

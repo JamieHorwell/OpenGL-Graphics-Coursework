@@ -131,6 +131,8 @@ public:
 	Matrix4 getModelMatrix() { return modelMatrix; };
 	Matrix4 getTextureMatrix() { return textureMatrix; };
 	Matrix4 getProjMatrix() { return projMatrix; };
+	Matrix4 & getViewMatObj() { return viewMatrix; };
+
 
 	void setViewMatrix(Matrix4 viewMat) { this->viewMatrix = viewMat; };
 

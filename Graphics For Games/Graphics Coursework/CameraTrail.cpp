@@ -27,15 +27,21 @@ CameraTrail::~CameraTrail()
 void CameraTrail::Update(float msec)
 {
 	currentDist = (cam->GetPosition() - cameraTrail[currentNode + 1]->nodePos).Length();
-	if (currentDist < 10) {
+	if (currentDist < 5) {
 		if (currentNode != cameraTrail.size() - 2) {
 			currentNode++;
 			SetDirectionVector(currentNode);
 			nodeDist = (cameraTrail[currentNode + 1]->nodePos - cameraTrail[currentNode]->nodePos).Length();
+			cam->SetPosition(cameraTrail[currentNode]->nodePos);
+			cam->SetPitch(cameraTrail[currentNode]->pitch);
+			cam->SetYaw(cameraTrail[currentNode]->yaw);
 		}
 	}
+	else {
+		moveCam(msec);
+	}
 	//move cams position
-	moveCam(msec);
+	
 
 }
 

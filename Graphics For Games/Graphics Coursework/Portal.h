@@ -4,6 +4,8 @@
 
 class Renderer;
 
+enum class SceneRender;
+
 class Portal
 {
 public:
@@ -14,7 +16,7 @@ public:
 
 	int portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode* portal);
 
-	void renderFromPortalView(SceneNode* portalSrc, SceneNode* portalDest);
+	void renderFromPortalView(SceneNode* portalSrc, SceneNode* portalDest, bool reflection, SceneRender sceneToRender);
 
 	void teleport(Matrix4 prevCam, Matrix4 currentCam);
 

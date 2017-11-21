@@ -33,5 +33,5 @@ protected:
 
 	float waterRotate;
 
-
+	GLuint shadowFBO;
 };

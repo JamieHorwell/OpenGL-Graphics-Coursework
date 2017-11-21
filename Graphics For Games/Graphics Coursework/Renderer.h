@@ -24,8 +24,8 @@ public:
 	virtual void UpdateScene(float msec);
 
 	
-	void RenderScene1();
-	void RenderScene2();
+	void RenderScene1(bool renderPortal);
+	void RenderScene2(bool renderPortal);
 	void RenderScene3();
 
 	ResourceManager* getResources() { return &resources; };
@@ -34,10 +34,15 @@ public:
 	void createTexture(GLuint &TexID);
 	void createDepthTexture(GLuint &TexID);
 	void createDepthBufferAttachment(GLuint &depthBufferID);
+	void createStencilTexture(GLuint &TexID);
 	void bindFramebuffer(GLuint fboID);
 	void bindScreenbuffer();
 
 	Camera & getCam() { return *camera; };
+
+	WaterReflectRefract* getReflectManager() { return reflectManager; };
+
+
 
 protected:
 	ResourceManager resources;
@@ -93,5 +98,7 @@ protected:
 	float time;
 	int fps;
 	SceneRender sceneOn;
-	
+
+	GLuint shadowFBO;
+	GLuint shadowTex;
 };
