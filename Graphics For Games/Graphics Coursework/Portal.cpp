@@ -5,6 +5,7 @@
 Portal::Portal(Renderer* renderer)
 {
 	this->renderer = renderer;
+	CulmativeTimer = 0;
 }
 
 
@@ -29,8 +30,9 @@ Matrix4 Portal::getPortalView(Matrix4 originalView, SceneNode * portalSrc, Scene
 }
 
 
-int Portal::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal)
+int Portal::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal, float msec)
 {
+	CulmativeTimer += msec;
 	//cameraviews arent in same position (camera has moved)
 	if (pos1 != pos2) {
 		
@@ -53,10 +55,15 @@ int Portal::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal)
 			Vector3 tuv = temp * Vector3(pos1.x - p0.x, pos1.y - p0.y, pos1.z - p0.z);
 			
 			//intersection with the plane
-			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 30.16) {
-				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 30.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 30.16 ) {
-				std::cout << "!!!!!!";
-					return 1;
+			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 20.16) {
+				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 40.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 40.16 ) {
+					if (CulmativeTimer > minTime) {
+
+						CulmativeTimer = 0;
+						return 1;
+					}
+				
+					
 				}
 
 			}
@@ -67,10 +74,12 @@ int Portal::portal_intersection(Vector3 pos1, Vector3 pos2, SceneNode * portal)
 			temp.SetColumn(2, Vector3(p3.x - p1.x, p3.y - p1.y, p3.z - p1.z));
 			temp = Matrix3::Inverse(temp);
 
-			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 30.16) {
-				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 30.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 30.16) {
-					std::cout << "!!!!!!";
-					return 1;
+			if (fabs(tuv.x) >= 0.000006 && fabs(tuv.x) <= 20.16) {
+				if (fabs(tuv.y) >= 0.000006 && fabs(tuv.y) <= 40.16 && fabs(tuv.z) >= 0.000006 && fabs(tuv.z) <= 40.16) {
+					if (CulmativeTimer > minTime) {
+						CulmativeTimer = 0;
+						return 1;
+					}
 				}
 
 			}

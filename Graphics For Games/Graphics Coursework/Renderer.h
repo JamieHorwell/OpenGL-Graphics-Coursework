@@ -11,6 +11,7 @@
 #include "ParticleEmitter.h"
 #include "CameraTrail.h"
 #include "shadowManager.h"
+#include "PostProcessing.h"
 
 
 enum class SceneRender { Scene1, Scene2, Scene3 };
@@ -32,6 +33,7 @@ public:
 	ResourceManager* getResources() { return &resources; };
 
 	void createFBO(GLuint &FBOID, bool colorAttch = true, bool depthAttach = true, bool stencilAttch = true);
+
 	void createTexture(GLuint &TexID);
 	void createDepthTexture(GLuint &TexID);
 	void createDepthBufferAttachment(GLuint &depthBufferID);
@@ -55,8 +57,8 @@ protected:
 	//specific rendering
 	void RenderSkyBox(GLuint skyboxTex);
 	void RenderWater();
-	void RenderHeightMap(HeightMap* heightMap);
-	void RenderPortal();
+	void RenderHeightMap(HeightMap* heightMap, bool shadowPersp = false);
+	void RenderPortal(SceneNode* portalToRender,bool shadowPersp = false);
 	//Debugging relfection and refraction textures
 	void RenderfboTest();
 	
@@ -102,4 +104,6 @@ protected:
 	shadowManager* shadowMan;
 	GLuint shadowFBO;
 	GLuint shadowTex;
+	bool postProcess;
+	PostProcessing* postProcesser;
 };

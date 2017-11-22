@@ -23,8 +23,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	//Scene Independent setup
 	shadowMan = new shadowManager(this);
-
-
+	postProcesser = new PostProcessing(this);
+	postProcess = false;
 
 	//Scene1 mesh + other setup
 	reflectionTest = Mesh::GenerateQuad();
@@ -60,8 +60,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	particleEmitter = new ParticleEmitter(this, resources.getShader("particleShader"), resources.getTexture("eruptionParticle.JPG"), 5000, 100, -300, 6000, Vector3(2100,1900,7000), Vector3(15,15,15));
 	portalQuad2 = new SceneNode(Mesh::GenerateQuad());
 	portalQuad2->SetModelScale(Vector3(200, 300, 1));
-	portalQuad2->SetTransform(Matrix4::Translation(Vector3(4700, 3000, 5200)));
-	portalQuad2->SetTransform(portalQuad2->GetTransform() * Matrix4::Rotation(90, Vector3(0, 1, 0)));
+	portalQuad2->SetTransform(Matrix4::Translation(Vector3(4700, 2200, 5200)));
+	portalQuad2->SetTransform(portalQuad2->GetTransform());
 	portal = new Portal(this);
 
 
@@ -94,11 +94,13 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 
 	waterMesh->SetTexture(resources.getTexture("lava.png"));
 	waterMesh->SetBumpMap(resources.getTexture("lavaBump.png"));
+	//debugging textures for portals
 	portalQuad->GetMesh()->SetTexture(resources.getTexture("lava.png"));
+	portalQuad2->GetMesh()->SetTexture(resources.getTexture("lava.png"));
 	hellMountain->SetTexture(resources.getTexture("Barren Reds.jpg"));
 	
 	projMatrix = Matrix4::Perspective(1.0f, 15000.0f, (float)width / (float)height, 45.0f);
-	mainLight = new Light(Vector3(3000, 5400.0f, 3000), Vector4(1,1,1,1), 50000);
+	mainLight = new Light(Vector3(1000, 5400.0f, 1000), Vector4(1,1,1,1), 50000000);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -145,7 +147,7 @@ void Renderer::UpdateScene(float msec) {
 	//////SCENE SPECIFIC UPDATING////////
 	switch (sceneOn) {
 	case SceneRender::Scene1:
-		if (portal->portal_intersection(camera->getPrevPos(), camera->GetPosition(), portalQuad)) {
+		if (portal->portal_intersection(camera->getPrevPos(), camera->GetPosition(), portalQuad, msec)) {
 			Vector4 newCamPos = Matrix4::Inverse(portal->getPortalView(viewMatrix,portalQuad,portalQuad2)) * Vector4(0,0,0,1);
 			//extract rotation from viewmatrix too?
 			camera->SetPosition(Vector3(newCamPos.x,newCamPos.y,newCamPos.z));
@@ -155,14 +157,14 @@ void Renderer::UpdateScene(float msec) {
 	case SceneRender::Scene2:
 		//check for other portal intersection
 		particleEmitter->updateParticles(msec);
-		if (portal->portal_intersection(camera->getPrevPos(), camera->GetPosition(), portalQuad2)) {
+		postProcess = true;
+		if (portal->portal_intersection(camera->getPrevPos(), camera->GetPosition(), portalQuad2, msec)) {
 			Vector4 newCamPos = Matrix4::Inverse(portal->getPortalView(viewMatrix, portalQuad2, portalQuad)) * Vector4(0, 0, 0, 1);
 			//extract rotation from viewmatrix too?
 			camera->SetPosition(Vector3(newCamPos.x, newCamPos.y, newCamPos.z));
 			sceneOn = SceneRender::Scene1;
+			
 		}
-
-
 		break;
 	case SceneRender::Scene3:
 
@@ -175,7 +177,7 @@ void Renderer::UpdateScene(float msec) {
 void Renderer::RenderScene1(bool renderPortal, bool shadowPersp)
 {
 	
-	if (!shadowPersp) {
+	if (!shadowPersp && renderPortal) {
 		//DRAW OUR SCENE FROM REFLECTION PERSPECTIVE
 		glEnable(GL_CLIP_DISTANCE0);
 		if (renderPortal) reflectManager->cameraReflectionPos(*camera, viewMatrix);
@@ -187,7 +189,7 @@ void Renderer::RenderScene1(bool renderPortal, bool shadowPersp)
 		RenderHeightMap(snowMountain);
 	}
 
-	if (!shadowPersp) {
+	if (!shadowPersp && renderPortal) {
 		//DRAW OUR SCENE FROM REFRACTION PERSPECTIVE
 		if (renderPortal) reflectManager->resetCamera(*camera, viewMatrix);
 		reflectManager->setPlaneToClip(150, false);
@@ -201,23 +203,24 @@ void Renderer::RenderScene1(bool renderPortal, bool shadowPersp)
 	//DRAW OUR SCENE NORMALLY
 	glDisable(GL_CLIP_DISTANCE0);
 	reflectManager->setPlaneToClip(1500000, true);
-	bindScreenbuffer();
-	if (!shadowPersp) shadowMan->DrawShadowScene(SceneRender::Scene1);
+	if(!shadowPersp) bindScreenbuffer();
+	if (!shadowPersp && renderPortal) shadowMan->DrawShadowScene(SceneRender::Scene1);
 	if(!shadowPersp)RenderSkyBox(resources.getSkybox("snowSky"));
 	if (renderPortal) portal->renderFromPortalView(portalQuad,portalQuad2, false, SceneRender::Scene2);
-	RenderHeightMap(snowMountain);
-	RenderWater();
-	if(shadowPersp)RenderPortal();
+	RenderHeightMap(snowMountain, shadowPersp);
+	if(!shadowPersp)RenderWater();
+	if(shadowPersp)RenderPortal(portalQuad,shadowPersp);
 	
 }
 
 void Renderer::RenderScene2(bool renderPortal, bool shadowPersp)
 {
-	RenderSkyBox(resources.getSkybox("hellSky"));
+	if(!shadowPersp)RenderSkyBox(resources.getSkybox("hellSky"));
+	if (!shadowPersp && renderPortal) shadowMan->DrawShadowScene(SceneRender::Scene2);
 	if(renderPortal) portal->renderFromPortalView(portalQuad2,portalQuad, false, SceneRender::Scene1);
-	RenderHeightMap(hellMountain);
-	renderLava();
-	particleEmitter->renderParticles();
+	RenderHeightMap(hellMountain, shadowPersp);
+	if(!shadowPersp)renderLava();
+	if(!shadowPersp)particleEmitter->renderParticles();
 	
 }
 
@@ -290,45 +293,59 @@ void Renderer::RenderWater()
 	glUseProgram(0);
 }
 
-void Renderer::RenderHeightMap(HeightMap* heightMap)
+void Renderer::RenderHeightMap(HeightMap* heightMap, bool shadowPersp)
 {
-	SetCurrentShader(resources.getShader("mountainBlend"));
+	if (shadowPersp) {
+		SetCurrentShader(resources.getShader("shadowShader"));
+	}
+	else {
+		SetCurrentShader(resources.getShader("mountainBlend"));
+		UpdateShaderMatrices();
+	}
+	
 	SetShaderLight(*mainLight);
 
 
 	/********BINDING SHADER ATTRIBS**********/
-
+	
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
-
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTexBump"), 1);
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "topTex"), 2);
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "topTexBump"), 3);
-	//also pass in perlin texture
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "perlinTex"), 4);
-	//pass in shadowTex
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 5);
-	//pass in clipping plane
-	glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), "clippingPlane"), 1, (float*)&reflectManager->getPlaneToClip());
+	if (!shadowPersp) {
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTexBump"), 1);
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "topTex"), 2);
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "topTexBump"), 3);
+		//also pass in perlin texture
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "perlinTex"), 4);
+		//pass in shadowTex
+		glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 5);
+		//pass in clipping plane
+		glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), "clippingPlane"), 1, (float*)&reflectManager->getPlaneToClip());
+	}
+	
 
 	/********ACTIVATING TEXTURE UNITS**********/
-
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D,heightMap->GetTopTex());
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D,heightMap->GetTopTexBump());
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, resources.getTexture("noiseSampler.png"));
-	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, shadowMan->getShadowTex());
-
+	if (!shadowPersp) {
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, heightMap->GetTopTex());
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, heightMap->GetTopTexBump());
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, resources.getTexture("noiseSampler.png"));
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, shadowMan->getShadowTex());
+	}
+	
 	//reset matrices
 	modelMatrix.ToIdentity();
+	UpdateShaderMatrices();
 	textureMatrix.ToIdentity();
 	Matrix4 tempMatrix = shadowMan->getShadowTexMatrix() * modelMatrix;
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, *&tempMatrix.values);
-
-	UpdateShaderMatrices();
+	if (shadowPersp) {
+		glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "viewMatrix"), 1, false, *&shadowMan->getLightViewMatrix().values);
+	}
+	
+	
 
 	heightMap->Draw();
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -336,26 +353,29 @@ void Renderer::RenderHeightMap(HeightMap* heightMap)
 
 }
 
-void Renderer::RenderPortal()
+void Renderer::RenderPortal(SceneNode* portalToRender,bool shadowPersp)
 {
-	SetCurrentShader(resources.getShader("basicShader"));
+	if (shadowPersp) {
+		SetCurrentShader(resources.getShader("shadowShader"));
+	}
+	else {
+		SetCurrentShader(resources.getShader("basicShader"));
+	}
+	
 	SetShaderLight(*mainLight);
 
 	UpdateShaderMatrices();
-	Matrix4 tempMatrix = shadowMan->getShadowTexMatrix() * (portalQuad->GetTransform()*Matrix4::Scale(portalQuad->GetModelScale()));
+	Matrix4 tempMatrix = shadowMan->getShadowTexMatrix() * (portalToRender->GetTransform()*Matrix4::Scale(portalToRender->GetModelScale()));
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, *&tempMatrix.values);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*Matrix4::Scale(portalQuad->GetModelScale())));
+	if(shadowPersp) glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "viewMatrix"), 1, false, *&shadowMan->getLightViewMatrix().values);
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalToRender->GetTransform()*Matrix4::Scale(portalQuad->GetModelScale())));
 
-	portalQuad->Draw();
+	portalToRender->Draw();
 
-	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*Matrix4::Scale(portalQuad2->GetModelScale())));
-
-	portalQuad2->Draw();
 
 	glUseProgram(0);
-	UpdateShaderMatrices();
+	
 }
 
 //Debugging relfection and refraction textures
@@ -457,6 +477,8 @@ void Renderer::createDepthTexture(GLuint & TexID)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8_EXT, width, height, 0, GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, NULL);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, TexID, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, TexID, 0);
 }
@@ -493,7 +515,13 @@ void Renderer::bindFramebuffer(GLuint fboID)
 
 void Renderer::bindScreenbuffer()
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	if (postProcess) {
+		glBindFramebuffer(GL_FRAMEBUFFER, postProcesser->getbufferFBO());
+	}
+	else {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+	
 }
 
 

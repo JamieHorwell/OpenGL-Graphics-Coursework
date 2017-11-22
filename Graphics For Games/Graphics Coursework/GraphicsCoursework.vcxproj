@@ -73,8 +73,8 @@
     <ClCompile Include="CameraTrail.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
-    <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="Portal.cpp" />
+    <ClCompile Include="PostProcessing.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="shadowManager.cpp" />
@@ -83,8 +83,8 @@
   <ItemGroup>
     <ClInclude Include="CameraTrail.h" />
     <ClInclude Include="ParticleEmitter.h" />
-    <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="Portal.h" />
+    <ClInclude Include="PostProcessing.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="shadowManager.h" />

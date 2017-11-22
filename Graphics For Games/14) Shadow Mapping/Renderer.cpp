@@ -3,7 +3,7 @@
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	camera = new Camera(-8.0f,40.0f,Vector3(-200.0f,50.0f,250.0f));
-	light = new Light(Vector3(16.0f,3000.0f,0.0f), Vector4(1,1,1,1), 1000500.0f);
+	light = new Light(Vector3(1000.0f,3000.0f,1000.0f), Vector4(1,1,1,1), 1000500.0f);
 	/*light = new Light(Vector3(-450.0f, 200.0f, 280.0f),
 		Vector4(1, 1, 1, 1), 5500.0f);*/
 	hellData = new MD5FileData(MESHDIR"hellknight.md5mesh");
@@ -44,7 +44,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	floor = new HeightMap(TEXTUREDIR"snowMountain.raw");
 	floor->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"brick.tga",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS));
 	floor->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"brickDOT3.tga",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-
+	SetTextureRepeating(floor->GetTexture(), true);
+	SetTextureRepeating(floor->GetBumpMap(), true);
 	glEnable(GL_DEPTH_TEST);
 
 	projMatrix = Matrix4::Perspective(1.0f,15000.0f,(float)width / (float)height,45.0f);
@@ -73,10 +74,10 @@ void Renderer::UpdateScene(float msec) {
 	camera->UpdateCamera(msec);
 	hellNode->Update(msec);
 	if (Window::GetKeyboard()->KeyDown(KEYBOARD_DOWN)) {
-		light->SetPosition(light->GetPosition() + Vector3(1,0,0));
+		light->SetPosition(light->GetPosition() + Vector3(5,0,0));
 	}
 	else if (Window::GetKeyboard()->KeyDown(KEYBOARD_UP)) {
-		light->SetPosition(light->GetPosition() - Vector3(1, 0, 0));
+		light->SetPosition(light->GetPosition() - Vector3(5, 0, 0));
 	}
 }
 

@@ -42,7 +42,7 @@ diffuse2 = texture (topTex, IN.texCoord);
 bump1 = texture(diffuseTexBump, IN.texCoord);
 bump2 = texture(topTexBump, IN.texCoord);
 
-float yValue = (IN.worldPos.y - 700 + (IN.noise* 800)) / 150;
+float yValue = (IN.worldPos.y - 700 + (IN.noise* 800)) / 300;
 yValue = clamp(yValue, 0.0, 1.0);
 
 diffuse = mix(diffuse1,diffuse2,yValue);
@@ -72,7 +72,7 @@ vec3 normal = normalize(TBN * (bump.rgb * 2.0 - 1.0));
  
  float shadow = 1.0;
  
- if(IN.shadowProj.w > 0.0) {
+ if(IN.shadowProj.w > 0.05) {
 	shadow = textureProj(shadowTex,IN.shadowProj);
  }
  
@@ -83,7 +83,7 @@ vec3 normal = normalize(TBN * (bump.rgb * 2.0 - 1.0));
  vec3 colour = ( diffuse.rgb * lightColour.rgb );
  colour += ( lightColour.rgb * sFactor ) * 0.33;
  FragColor = vec4 ( colour * atten * lambert , diffuse.a );
- FragColor.rgb += ( diffuse.rgb * lightColour.rgb ) * 0.19;
+ FragColor.rgb += ( diffuse.rgb * lightColour.rgb ) * 0.21;
  
  
  

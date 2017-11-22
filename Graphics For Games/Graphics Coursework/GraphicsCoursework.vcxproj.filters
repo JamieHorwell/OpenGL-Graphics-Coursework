@@ -27,9 +27,6 @@
     <ClCompile Include="CameraTrail.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PerlinNoise.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WaterReflectRefract.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -40,6 +37,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="shadowManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,9 +53,6 @@
     <ClInclude Include="CameraTrail.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PerlinNoise.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="WaterReflectRefract.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -66,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="shadowManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcessing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

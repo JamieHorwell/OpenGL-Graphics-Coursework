@@ -17,6 +17,10 @@ public:
 
 	Matrix4 & getShadowTexMatrix() { return shadowTexMatrix; };
 
+	Matrix4 & getLightViewMatrix() { return lightViewMatrix; };
+
+	void createShadowTexture();
+
 
 protected:
 	GLuint shadowTex;
@@ -25,5 +29,9 @@ protected:
 	Renderer* renderer;
 
 	Matrix4 shadowTexMatrix;
+	Matrix4 lightViewMatrix;
+
+
+	int shadowSize = 2048;
 };
 
