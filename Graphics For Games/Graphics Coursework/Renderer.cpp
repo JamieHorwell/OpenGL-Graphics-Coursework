@@ -18,7 +18,11 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	resources.addShader("reflectShader", "FluidVertex.glsl", "reflectFragment.glsl");
 	resources.addShader("lavaShader", "lavaVertex.glsl", "lavaFragment.glsl");
 	resources.addShader("skyboxShader", "skyboxVertex.glsl", "skyboxFragment.glsl");
-	resources.addShader("mountainBlend", "BumpVertexPerlin.glsl", "mountainFragmentPerlin.glsl");
+	resources.addShader("mountainBlend", "mountainVertex.glsl", "mountainFragmentPerlin.glsl");
+	resources.addShader("shadowShader","shadowVert.glsl", "shadowFrag.glsl");
+
+	//Scene Independent setup
+	shadowMan = new shadowManager(this);
 
 
 
@@ -132,8 +136,8 @@ void Renderer::RenderScene() {
 void Renderer::UpdateScene(float msec) {
 	///////SCENE INDEPENDENT UPDATING///////
 	camera->SetPrevPos(camera->GetPosition());
-	camTrail->Update(msec);
-	//camera->UpdateCamera(msec);
+	//camTrail->Update(msec);
+	camera->UpdateCamera(msec);
 	viewMatrix = camera->BuildViewMatrix();
 	time += msec;
 	fps = 1 / (msec / 1000);
@@ -168,45 +172,46 @@ void Renderer::UpdateScene(float msec) {
 	
 }
 
-void Renderer::RenderScene1(bool renderPortal)
+void Renderer::RenderScene1(bool renderPortal, bool shadowPersp)
 {
 	
+	if (!shadowPersp) {
+		//DRAW OUR SCENE FROM REFLECTION PERSPECTIVE
+		glEnable(GL_CLIP_DISTANCE0);
+		if (renderPortal) reflectManager->cameraReflectionPos(*camera, viewMatrix);
+		reflectManager->setPlaneToClip(150, true);
+		bindFramebuffer(reflectManager->getReflectionFBO());
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		RenderSkyBox(resources.getSkybox("snowSky"));
+		if (renderPortal) portal->renderFromPortalView(portalQuad, portalQuad2, true, SceneRender::Scene2);
+		RenderHeightMap(snowMountain);
+	}
 
-	//DRAW OUR SCENE FROM REFLECTION PERSPECTIVE
-	glEnable(GL_CLIP_DISTANCE0);
-	if (renderPortal) reflectManager->cameraReflectionPos(*camera, viewMatrix);
-	reflectManager->setPlaneToClip(150, true);
-	bindFramebuffer(reflectManager->getReflectionFBO());
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	RenderSkyBox(resources.getSkybox("snowSky"));
-	if (renderPortal) portal->renderFromPortalView(portalQuad, portalQuad2, true, SceneRender::Scene2);
-	RenderHeightMap(snowMountain);
-	
-
-
-	//DRAW OUR SCENE FROM REFRACTION PERSPECTIVE
-	if (renderPortal) reflectManager->resetCamera(*camera, viewMatrix);
-	reflectManager->setPlaneToClip(150, false);
-	UpdateShaderMatrices();
-	bindFramebuffer(reflectManager->getRefractionFBO());
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	RenderSkyBox(resources.getSkybox("snowSky"));
-	RenderHeightMap(snowMountain);
-
+	if (!shadowPersp) {
+		//DRAW OUR SCENE FROM REFRACTION PERSPECTIVE
+		if (renderPortal) reflectManager->resetCamera(*camera, viewMatrix);
+		reflectManager->setPlaneToClip(150, false);
+		UpdateShaderMatrices();
+		bindFramebuffer(reflectManager->getRefractionFBO());
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		RenderSkyBox(resources.getSkybox("snowSky"));
+		RenderHeightMap(snowMountain);
+	}
 	
 	//DRAW OUR SCENE NORMALLY
 	glDisable(GL_CLIP_DISTANCE0);
 	reflectManager->setPlaneToClip(1500000, true);
 	bindScreenbuffer();
-	RenderSkyBox(resources.getSkybox("snowSky"));
+	if (!shadowPersp) shadowMan->DrawShadowScene(SceneRender::Scene1);
+	if(!shadowPersp)RenderSkyBox(resources.getSkybox("snowSky"));
 	if (renderPortal) portal->renderFromPortalView(portalQuad,portalQuad2, false, SceneRender::Scene2);
 	RenderHeightMap(snowMountain);
 	RenderWater();
-	
+	if(shadowPersp)RenderPortal();
 	
 }
 
-void Renderer::RenderScene2(bool renderPortal)
+void Renderer::RenderScene2(bool renderPortal, bool shadowPersp)
 {
 	RenderSkyBox(resources.getSkybox("hellSky"));
 	if(renderPortal) portal->renderFromPortalView(portalQuad2,portalQuad, false, SceneRender::Scene1);
@@ -290,34 +295,38 @@ void Renderer::RenderHeightMap(HeightMap* heightMap)
 	SetCurrentShader(resources.getShader("mountainBlend"));
 	SetShaderLight(*mainLight);
 
+
+	/********BINDING SHADER ATTRIBS**********/
+
 	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
 
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTexBump"), 1);
-
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "topTex"), 2);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "topTexBump"), 3);
-
 	//also pass in perlin texture
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "perlinTex"), 4);
-
+	//pass in shadowTex
+	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "shadowTex"), 5);
 	//pass in clipping plane
 	glUniform4fv(glGetUniformLocation(currentShader->GetProgram(), "clippingPlane"), 1, (float*)&reflectManager->getPlaneToClip());
 
-	//top of mountain texture
+	/********ACTIVATING TEXTURE UNITS**********/
+
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D,heightMap->GetTopTex());
-	//also bind normal for toptexture
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D,heightMap->GetTopTexBump());
-
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, resources.getTexture("noiseSampler.png"));
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, shadowMan->getShadowTex());
 
 	//reset matrices
 	modelMatrix.ToIdentity();
 	textureMatrix.ToIdentity();
-
+	Matrix4 tempMatrix = shadowMan->getShadowTexMatrix() * modelMatrix;
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, *&tempMatrix.values);
 
 	UpdateShaderMatrices();
 
@@ -333,6 +342,8 @@ void Renderer::RenderPortal()
 	SetShaderLight(*mainLight);
 
 	UpdateShaderMatrices();
+	Matrix4 tempMatrix = shadowMan->getShadowTexMatrix() * (portalQuad->GetTransform()*Matrix4::Scale(portalQuad->GetModelScale()));
+	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "textureMatrix"), 1, false, *&tempMatrix.values);
 	glUniform1i(glGetUniformLocation(currentShader->GetProgram(), "diffuseTex"), 0);
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, (float*)&(portalQuad->GetTransform()*Matrix4::Scale(portalQuad->GetModelScale())));
 
@@ -383,6 +394,7 @@ void Renderer::DrawTextOrth(const std::string &text, const Vector3 &position, co
 
 	modelMatrix = Matrix4::Translation(Vector3(position.x, height - position.y, position.z)) * Matrix4::Scale(Vector3(size, size, 1));
 	viewMatrix.ToIdentity();
+	textureMatrix.ToIdentity();
 	Matrix4 projMatTemp = projMatrix;
 	projMatrix = Matrix4::Orthographic(-1.0f, 1.0f, (float)width, 0.0f, (float)height, 0.0f);
 	UpdateShaderMatrices();
@@ -417,14 +429,15 @@ void Renderer::renderLava()
 	glUseProgram(0);
 }
 
-void Renderer::createFBO(GLuint &FBOID)
+void Renderer::createFBO(GLuint &FBOID, bool colorAttch, bool depthAttach, bool stencilAttch)
 {
 	//generate our buffer
 	glGenFramebuffers(1, &FBOID);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBOID);
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
-	glDrawBuffer(GL_DEPTH_ATTACHMENT);
-	glDrawBuffer(GL_STENCIL_ATTACHMENT);
+	if(colorAttch) glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	if(depthAttach) glDrawBuffer(GL_DEPTH_ATTACHMENT);
+	if(stencilAttch) glDrawBuffer(GL_STENCIL_ATTACHMENT);
+	if (!colorAttch && !depthAttach && !stencilAttch) glDrawBuffer(GL_NONE);
 }
 
 void Renderer::createTexture(GLuint & TexID)

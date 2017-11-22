@@ -41,7 +41,7 @@
  
  float shadow = 1.0;
  
- if(IN.shadowProj.w > 0.0) {
+ if(IN.shadowProj.w > 0.09) {
 	shadow = textureProj(shadowTex,IN.shadowProj);
  }
  

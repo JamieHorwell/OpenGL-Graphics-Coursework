@@ -10,6 +10,7 @@
 #include "Portal.h"
 #include "ParticleEmitter.h"
 #include "CameraTrail.h"
+#include "shadowManager.h"
 
 
 enum class SceneRender { Scene1, Scene2, Scene3 };
@@ -24,13 +25,13 @@ public:
 	virtual void UpdateScene(float msec);
 
 	
-	void RenderScene1(bool renderPortal);
-	void RenderScene2(bool renderPortal);
+	void RenderScene1(bool renderPortal, bool shadowPersp = false);
+	void RenderScene2(bool renderPortal, bool shadowPersp = false);
 	void RenderScene3();
 
 	ResourceManager* getResources() { return &resources; };
 
-	void createFBO(GLuint &FBOID);
+	void createFBO(GLuint &FBOID, bool colorAttch = true, bool depthAttach = true, bool stencilAttch = true);
 	void createTexture(GLuint &TexID);
 	void createDepthTexture(GLuint &TexID);
 	void createDepthBufferAttachment(GLuint &depthBufferID);
@@ -42,7 +43,7 @@ public:
 
 	WaterReflectRefract* getReflectManager() { return reflectManager; };
 
-
+	Light* getMainLight() { return mainLight; }
 
 protected:
 	ResourceManager resources;
@@ -98,7 +99,7 @@ protected:
 	float time;
 	int fps;
 	SceneRender sceneOn;
-
+	shadowManager* shadowMan;
 	GLuint shadowFBO;
 	GLuint shadowTex;
 };

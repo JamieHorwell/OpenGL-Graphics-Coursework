@@ -5,7 +5,7 @@
 #include "../../nclgl/MD5Mesh.h"
 #include "../../nclgl/MD5Node.h"
 
-#define SHADOWSIZE 2048
+#define SHADOWSIZE 1024
 
 class Renderer : public OGLRenderer {
 public:

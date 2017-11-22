@@ -1,9 +1,11 @@
 #include "Renderer.h"
+#include "../../nclgl/HeightMap.h"
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	camera = new Camera(-8.0f,40.0f,Vector3(-200.0f,50.0f,250.0f));
-	light = new Light(Vector3(-450.0f,100.0f,280.0f), Vector4(1,1,1,1), 1000500.0f);
-
+	light = new Light(Vector3(16.0f,3000.0f,0.0f), Vector4(1,1,1,1), 1000500.0f);
+	/*light = new Light(Vector3(-450.0f, 200.0f, 280.0f),
+		Vector4(1, 1, 1, 1), 5500.0f);*/
 	hellData = new MD5FileData(MESHDIR"hellknight.md5mesh");
 	hellNode = new MD5Node(*hellData);
 
@@ -39,7 +41,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	glDrawBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	floor = Mesh::GenerateQuad();
+	floor = new HeightMap(TEXTUREDIR"snowMountain.raw");
 	floor->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"brick.tga",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS));
 	floor->SetBumpMap(SOIL_load_OGL_texture(TEXTUREDIR"brickDOT3.tga",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
@@ -70,6 +72,12 @@ Renderer::~Renderer(void) {
 void Renderer::UpdateScene(float msec) {
 	camera->UpdateCamera(msec);
 	hellNode->Update(msec);
+	if (Window::GetKeyboard()->KeyDown(KEYBOARD_DOWN)) {
+		light->SetPosition(light->GetPosition() + Vector3(1,0,0));
+	}
+	else if (Window::GetKeyboard()->KeyDown(KEYBOARD_UP)) {
+		light->SetPosition(light->GetPosition() - Vector3(1, 0, 0));
+	}
 }
 
 void Renderer::RenderScene() {
@@ -97,7 +105,7 @@ void Renderer::DrawShadowScene() {
 	SetCurrentShader(shadowShader);
 
 	//build viewMatrix from lights position, set it to look at origin, where hellknight is standing
-	viewMatrix = Matrix4::BuildViewMatrix(light->GetPosition(), Vector3(0,0,0));
+	viewMatrix = Matrix4::BuildViewMatrix(light->GetPosition(), Vector3(4000,0,4000));
 	//bias matrix keeps coords to 0.0 to 1.0 range for suitable texture sampling
 	textureMatrix = biasMatrix*(projMatrix*viewMatrix);
 
@@ -127,6 +135,7 @@ void Renderer::DrawCombinedScene() {
 	glBindTexture(GL_TEXTURE_2D, shadowTex);
 
 	viewMatrix = camera->BuildViewMatrix();
+	//viewMatrix = Matrix4::BuildViewMatrix(light->GetPosition(), Vector3(0, 0, 0));
 	UpdateShaderMatrices();
 
 	DrawFloor();
@@ -138,17 +147,23 @@ void Renderer::DrawCombinedScene() {
 void Renderer::DrawMesh() {
 	modelMatrix.ToIdentity();
 	SetShaderLight(*light);
+	
+	//textureMatrix = biasMatrix*(projMatrix*viewMatrix);
 	Matrix4 tempMatrix = textureMatrix * modelMatrix;
 
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(),"textureMatrix"),1,false,*&tempMatrix.values);
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(),"modelMatrix"),1,false,*&modelMatrix.values);
+	glUniform3fv(glGetUniformLocation(currentShader->GetProgram(), "cameraPos"),1, (float*)&camera->GetPosition());
 
 	hellNode->Draw(*this);
 }
 
 void Renderer::DrawFloor() {
-	modelMatrix = Matrix4::Rotation(90, Vector3(1,0,0)) * Matrix4::Scale(Vector3(450,450,1));
+	modelMatrix.ToIdentity();
+	/*modelMatrix = Matrix4::Rotation(90, Vector3(1, 0, 0)) *
+		Matrix4::Scale(Vector3(450, 450, 1));*/
 	Matrix4 tempMatrix = textureMatrix * modelMatrix;
+
 
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(),"textureMatrix"),1,false, *&tempMatrix.values);
 	glUniformMatrix4fv(glGetUniformLocation(currentShader->GetProgram(), "modelMatrix"), 1, false, *&modelMatrix.values);

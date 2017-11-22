@@ -12,10 +12,10 @@ public:
 
 	static void CreateCube() {
 		OBJMesh * m = new OBJMesh();
-		m->LoadOBJMesh(MESHDIR"Ball OBJ.obj");
+		m->LoadOBJMesh(MESHDIR"cube.obj");
 		cube = m;
 		OBJMesh* headObj = new OBJMesh();
-		headObj->LoadOBJMesh(MESHDIR"cube.obj");
+		headObj->LoadOBJMesh(MESHDIR"corsucant_01.obj");
 		headMesh = headObj;
 	}
 	static void DeleteCube() { delete cube; };

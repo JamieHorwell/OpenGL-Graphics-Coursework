@@ -22,6 +22,7 @@ out Vertex {
 	vec3 tangent;
 	vec3 binormal;
 	vec3 worldPos;
+	vec4 shadowProj;
 	float noise;
 } OUT;
 
@@ -89,6 +90,7 @@ void main(void)	{
 	OUT.tangent = normalize(normalMatrix * normalize(tangent));
 	OUT.binormal = normalize(normalMatrix * normalize(cross(normal,tangent)));
 	OUT.worldPos = (modelMatrix * vec4(position,1)).xyz;
+	OUT.shadowProj = (textureMatrix * vec4(position+(normal*1.5),1));
 	//clipping out vertexes
 	gl_ClipDistance[0] = dot((modelMatrix * vec4(position,1)),clippingPlane);
 	gl_Position = finalPos;

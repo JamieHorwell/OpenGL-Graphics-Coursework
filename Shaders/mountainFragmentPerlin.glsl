@@ -6,6 +6,7 @@
  uniform sampler2D topTex;
  uniform sampler2D topTexBump;
  
+ uniform sampler2DShadow shadowTex;
 
  uniform vec3 cameraPos;
  uniform vec4 lightColour;
@@ -19,6 +20,7 @@
  vec3 tangent;
  vec3 binormal;
  vec3 worldPos;
+ vec4 shadowProj;
  float noise;
  } IN;
 
@@ -65,6 +67,18 @@ vec3 normal = normalize(TBN * (bump.rgb * 2.0 - 1.0));
 
  float rFactor = max (0.0 , dot( halfDir , normal ));
  float sFactor = pow ( rFactor , 50.0 );
+ 
+ /////// SHADOW CALCULATIONS /////////
+ 
+ float shadow = 1.0;
+ 
+ if(IN.shadowProj.w > 0.0) {
+	shadow = textureProj(shadowTex,IN.shadowProj);
+ }
+ 
+ lambert *= shadow;
+ 
+ ///FINAL COLOUR CALCULATIONS ////////
  
  vec3 colour = ( diffuse.rgb * lightColour.rgb );
  colour += ( lightColour.rgb * sFactor ) * 0.33;
