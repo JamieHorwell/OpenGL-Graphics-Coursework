@@ -17,8 +17,8 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 		return;
 	}
 
-	hellData->AddAnim(MESHDIR"walk7.md5anim");
-	hellNode->PlayAnim(MESHDIR"walk7.md5anim");
+	hellData->AddAnim(MESHDIR"attack2.md5anim");
+	hellNode->PlayAnim(MESHDIR"attack2.md5anim");
 
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 

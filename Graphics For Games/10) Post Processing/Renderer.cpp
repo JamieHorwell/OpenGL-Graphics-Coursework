@@ -13,7 +13,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 
 	sceneShader = new Shader(SHADERDIR"TexturedVertex.glsl",SHADERDIR"TexturedFragment.glsl");
 
-	processShader = new Shader(SHADERDIR"TexturedVertex.glsl","processfrag.glsl");
+	processShader = new Shader(SHADERDIR"TexturedVertex.glsl",SHADERDIR"blurFrag.glsl");
 
 	if (!processShader->LinkProgram() || !sceneShader->LinkProgram() || !heightMap->GetTexture()) {
 		return;
@@ -59,12 +59,15 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, bufferDepthTex, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bufferColourTex[0], 0);
 
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE || !bufferDepthTex || !bufferColourTex[0]) {
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE || !bufferDepthTex || !bufferColourTex[0] || !bufferColourTex[1]) {
 		return;
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	init = true;
 }
 
@@ -124,7 +127,7 @@ void Renderer::DrawPostProcess() {
 	//clear FBO
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-	SetCurrentShader(processShader);
+	SetCurrentShader(sceneShader);
 	//orthographic matrix from -1.0 to 1.0 on each axis
 	projMatrix = Matrix4::Orthographic(-1,1,1,-1,-1,1);
 	//make view matrix identity matrix as our quad will perfectly fill screen space

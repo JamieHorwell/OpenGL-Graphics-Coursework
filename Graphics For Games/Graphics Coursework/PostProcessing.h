@@ -19,6 +19,13 @@ public:
 	GLuint getProcessFBO() { return processFBO; };
 	GLuint getbufferFBO() { return bufferFBO; };
 
+
+	void createPostProcessTex();
+	void createColorTex();
+
+	
+	void setPostProcess(int passes) { this->postPasses = passes; };
+
 private:
 	Renderer* renderer;
 

@@ -11,15 +11,18 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent) {
 	waterMesh = new HeightMap();
 	snowMountain = new HeightMap(TEXTUREDIR"snowMountain.raw");
 	font = new Font(SOIL_load_OGL_texture(TEXTUREDIR"tahoma.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_COMPRESS_TO_DXT), 16, 16);
+	postProcessPass = false;
 
 	//add shaders and textures to our resourceManager
 	resources.addShader("basicShader", "TexturedVertex.glsl", "TexturedFragment.glsl");
 	resources.addShader("particleShader","ParticleVertex.glsl", "particleFragment.glsl");
-	resources.addShader("reflectShader", "FluidVertex.glsl", "reflectFragment.glsl");
+	resources.addShader("reflectShader", "FluidVertex.glsl", "reflectFragment.glsl","faceNormal.glsl");
 	resources.addShader("lavaShader", "lavaVertex.glsl", "lavaFragment.glsl");
 	resources.addShader("skyboxShader", "skyboxVertex.glsl", "skyboxFragment.glsl");
 	resources.addShader("mountainBlend", "mountainVertex.glsl", "mountainFragmentPerlin.glsl");
 	resources.addShader("shadowShader","shadowVert.glsl", "shadowFrag.glsl");
+	resources.addShader("processShader","TexturedVertex.glsl", "blurFrag.glsl");
+	
 
 	//Scene Independent setup
 	shadowMan = new shadowManager(this);
@@ -150,12 +153,22 @@ void Renderer::UpdateScene(float msec) {
 		if (portal->portal_intersection(camera->getPrevPos(), camera->GetPosition(), portalQuad, msec)) {
 			Vector4 newCamPos = Matrix4::Inverse(portal->getPortalView(viewMatrix,portalQuad,portalQuad2)) * Vector4(0,0,0,1);
 			//extract rotation from viewmatrix too?
-			camera->SetPosition(Vector3(newCamPos.x,newCamPos.y,newCamPos.z));
+			camera->SetPosition(Vector3(newCamPos.x,newCamPos.y,newCamPos.z+200));
+			camera->SetYaw(camera->GetYaw() + 180);
+			camTrail->insetCamTrail(Vector3(newCamPos.x, newCamPos.y, newCamPos.z + 200),camera->GetPitch(),camera->GetYaw());
 			sceneOn = SceneRender::Scene2;
+			time = 0;
 		}
 		break;
 	case SceneRender::Scene2:
 		//check for other portal intersection
+		if (time > 15000) {
+			postProcesser->setPostProcess((time - 14000) / 100);
+			if (time > 21000) {
+				sceneOn = SceneRender::Scene3;
+				time = 0;
+			}
+		}
 		particleEmitter->updateParticles(msec);
 		postProcess = true;
 		if (portal->portal_intersection(camera->getPrevPos(), camera->GetPosition(), portalQuad2, msec)) {
@@ -163,6 +176,7 @@ void Renderer::UpdateScene(float msec) {
 			//extract rotation from viewmatrix too?
 			camera->SetPosition(Vector3(newCamPos.x, newCamPos.y, newCamPos.z));
 			sceneOn = SceneRender::Scene1;
+			postProcess = false;
 			
 		}
 		break;
@@ -215,16 +229,28 @@ void Renderer::RenderScene1(bool renderPortal, bool shadowPersp)
 
 void Renderer::RenderScene2(bool renderPortal, bool shadowPersp)
 {
-	if(!shadowPersp)RenderSkyBox(resources.getSkybox("hellSky"));
-	if (!shadowPersp && renderPortal) shadowMan->DrawShadowScene(SceneRender::Scene2);
-	if(renderPortal) portal->renderFromPortalView(portalQuad2,portalQuad, false, SceneRender::Scene1);
-	RenderHeightMap(hellMountain, shadowPersp);
-	if(!shadowPersp)renderLava();
-	if(!shadowPersp)particleEmitter->renderParticles();
+	if (postProcess) {
+		postProcesser->DrawScene(SceneRender::Scene2);
+		postProcesser->DrawPostProcess();
+		postProcesser->DrawFinalScreen();
+	}
+	else {
+		if (!shadowPersp)RenderSkyBox(resources.getSkybox("hellSky"));
+		if (!shadowPersp && renderPortal) shadowMan->DrawShadowScene(SceneRender::Scene2);
+		if (renderPortal) portal->renderFromPortalView(portalQuad2, portalQuad, false, SceneRender::Scene1);
+		RenderHeightMap(hellMountain, shadowPersp);
+		if (!shadowPersp)renderLava();
+		if (!shadowPersp)particleEmitter->renderParticles();
+	}
 	
+
 }
 
 void Renderer::RenderScene3()
+{
+}
+
+void Renderer::renderPlanet()
 {
 }
 
@@ -411,7 +437,7 @@ void Renderer::DrawTextOrth(const std::string &text, const Vector3 &position, co
 	SetCurrentShader(resources.getShader("basicShader"));
 	//Create a new temporary TextMesh, using our line of text and our font
 	TextMesh* mesh = new TextMesh(text, *font);
-
+	glDisable(GL_DEPTH_TEST);
 	modelMatrix = Matrix4::Translation(Vector3(position.x, height - position.y, position.z)) * Matrix4::Scale(Vector3(size, size, 1));
 	viewMatrix.ToIdentity();
 	textureMatrix.ToIdentity();
@@ -423,6 +449,7 @@ void Renderer::DrawTextOrth(const std::string &text, const Vector3 &position, co
 	delete mesh; //Once it's drawn, we don't need it anymore!
 	projMatrix = projMatTemp;
 	glUseProgram(0);
+	glEnable(GL_DEPTH_TEST);
 }
 
 void Renderer::renderLava()
@@ -515,7 +542,7 @@ void Renderer::bindFramebuffer(GLuint fboID)
 
 void Renderer::bindScreenbuffer()
 {
-	if (postProcess) {
+	if (postProcessPass) {
 		glBindFramebuffer(GL_FRAMEBUFFER, postProcesser->getbufferFBO());
 	}
 	else {

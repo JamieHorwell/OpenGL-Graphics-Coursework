@@ -29,6 +29,8 @@ public:
 	void RenderScene1(bool renderPortal, bool shadowPersp = false);
 	void RenderScene2(bool renderPortal, bool shadowPersp = false);
 	void RenderScene3();
+	void renderPlanet();
+
 
 	ResourceManager* getResources() { return &resources; };
 
@@ -46,6 +48,12 @@ public:
 	WaterReflectRefract* getReflectManager() { return reflectManager; };
 
 	Light* getMainLight() { return mainLight; }
+
+
+	void setPostProcess(bool postProcess) { this->postProcess = postProcess; };
+	bool getPostProcess() { return postProcess; };
+
+	void setPostProcessPass(bool postProcessPass) { this->postProcessPass = postProcessPass; };
 
 protected:
 	ResourceManager resources;
@@ -105,5 +113,6 @@ protected:
 	GLuint shadowFBO;
 	GLuint shadowTex;
 	bool postProcess;
+	bool postProcessPass;
 	PostProcessing* postProcesser;
 };

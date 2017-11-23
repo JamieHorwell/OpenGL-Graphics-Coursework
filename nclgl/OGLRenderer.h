@@ -133,10 +133,13 @@ public:
 	Matrix4 getProjMatrix() { return projMatrix; };
 	Matrix4 & getViewMatObj() { return viewMatrix; };
 	Matrix4 & getTextMatRef() { return textureMatrix; };
-
+	void setProjMatrix(Matrix4 mat) { this->projMatrix = mat; };
+	void setTextureMat(Matrix4 mat) { this->textureMatrix = mat; };
 	void setViewMatrix(Matrix4 viewMat) { this->viewMatrix = viewMat; };
-
+	void setModelMatrix(Matrix4 mat) { this->modelMatrix = mat; };
 	void			UpdateShaderMatrices();
+
+
 
 protected:
 	virtual void	Resize(int x, int y);	

@@ -14,7 +14,7 @@ public:
 	virtual void UpdateScene(float msec);
 
 protected: 
-	HeightMap* heightMap;
+	Mesh* heightMap;
 	Camera* camera;
 	Mesh* triangle;
 };

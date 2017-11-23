@@ -1,10 +1,10 @@
 #include "Renderer.h"
-
+#include "../../nclgl/OBJMesh.h"
 
 
 Renderer::Renderer(Window &parent) : OGLRenderer(parent) 
 {
-	heightMap = new HeightMap(TEXTUREDIR"terrain.raw");
+	heightMap = new OBJMesh(MESHDIR"Termanation.obj");
 	triangle = Mesh::GenerateTriangle();
 	triangle->SetTexture(SOIL_load_OGL_texture(TEXTUREDIR"brick.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0));
 	camera = new Camera();
@@ -45,7 +45,7 @@ void Renderer::UpdateScene(float msec) {
 
 void Renderer::RenderScene() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	modelMatrix = Matrix4::Scale(Vector3(100, 100, 100));
 	glUseProgram(currentShader->GetProgram());
 	UpdateShaderMatrices();
 

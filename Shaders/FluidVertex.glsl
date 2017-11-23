@@ -7,7 +7,7 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
 uniform mat4 textureMatrix;
-
+uniform vec3 cameraPos;
 
 
 in vec3 position;
@@ -19,7 +19,9 @@ out Vertex {
 	vec4 colour;
 	vec4 clipSpace;
 	vec3 normal;
+	vec3 newSpace;
 	vec3 worldPos;
+	vec3 toCam;
 } OUT;
 
 
@@ -81,19 +83,20 @@ float noise(vec3 p) {
 void main(void)	{
 	//noise generation
 	float n = noise(vec3(position.x + time / 20,position.z + time / 20,time / 20)/ 170.0) / 1.0 + noise(vec3(position.x + time / 10,position.z + time / 10,time / 10)/64.0) / 2.0
-	+ noise(vec3(position.x + time / 7,position.z + time / 7,time / 7)/32.0) / 16.0;
+	+ noise(vec3(position.x + time / 7,position.z + time / 7,time / 7)/32.0) / 10.0;
 	vec3 newPos = position;
-	newPos.y += n * 35;
+	newPos.y += n * 40;
 	
 
 	OUT.colour = colour;
-	
+	OUT.newSpace = newPos;
 	
 	mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
 	
 	OUT.normal = normalize(normalMatrix * normalize(normal));
 	OUT.worldPos = (modelMatrix * vec4(position,1)).xyz;
 	OUT.clipSpace = (projMatrix * viewMatrix * modelMatrix) * vec4(position.x, position.y, position.z, 1.0);
+	OUT.toCam = cameraPos - (modelMatrix * vec4(newPos,1)).xyz;
 	gl_Position = (projMatrix * viewMatrix * modelMatrix) * vec4(newPos, 1.0);
 	
 }

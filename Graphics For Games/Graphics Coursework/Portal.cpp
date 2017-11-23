@@ -5,7 +5,7 @@
 Portal::Portal(Renderer* renderer)
 {
 	this->renderer = renderer;
-	CulmativeTimer = 0;
+	CulmativeTimer = 4;
 }
 
 

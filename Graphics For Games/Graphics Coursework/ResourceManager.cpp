@@ -30,7 +30,13 @@ bool ResourceManager::addTexture(string texName)
 
 bool ResourceManager::addShader(string shaderName, string vertexShader, string fragShader, string geomShader)
 {
-	shaders.emplace(shaderName, new Shader(SHADERDIR + vertexShader,SHADERDIR + fragShader));
+	if (geomShader.length() > 0) {
+		shaders.emplace(shaderName, new Shader(SHADERDIR + vertexShader, SHADERDIR + fragShader, SHADERDIR + geomShader));
+	}
+	else {
+		shaders.emplace(shaderName, new Shader(SHADERDIR + vertexShader, SHADERDIR + fragShader));
+	}
+	
 	if (shaders.at(shaderName)->LinkProgram()) return true;
 	else return false;
 	

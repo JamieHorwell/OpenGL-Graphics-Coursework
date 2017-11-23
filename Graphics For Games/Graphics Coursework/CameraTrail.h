@@ -21,6 +21,8 @@ public:
 
 	void SetDirectionVector(int index);
 
+	void insetCamTrail(Vector3 pos, float pitch, float yaw);
+
 protected:
 	Camera* cam;
 
