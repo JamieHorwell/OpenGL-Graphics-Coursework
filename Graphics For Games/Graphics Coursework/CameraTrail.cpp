@@ -6,16 +6,18 @@ CameraTrail::CameraTrail(Camera* cam)
 {
 	this->cam = cam;
 	currentNode = -1;
-	//cameraTrail.push_back(new trailNode(Vector3(-770, 2200, -500), -26.4, 230.8));
-	//cameraTrail.push_back(new trailNode(Vector3(3900, 1500, 600), -11.55, 176));
-	//cameraTrail.push_back(new trailNode(Vector3(7310, 590, 3050), -15.4, 127));
-	//cameraTrail.push_back(new trailNode(Vector3(7275, 686, 7223), -9.94, 74.8));
+	cameraTrail.push_back(new trailNode(Vector3(-770, 2200, -500), -26.4, 230.8));
+	cameraTrail.push_back(new trailNode(Vector3(3900, 1500, 600), -11.55, 176));
+	cameraTrail.push_back(new trailNode(Vector3(7310, 590, 3050), -15.4, 127));
+	cameraTrail.push_back(new trailNode(Vector3(7275, 686, 7223), -9.94, 74.8));
 	cameraTrail.push_back(new trailNode(Vector3(3500, 492, 7558), -1.6, 356));
 	cameraTrail.push_back(new trailNode(Vector3(3620, 492, 5495), -2.17, 358));
 	cameraTrail.push_back(new trailNode(Vector3(5542, 2531, 2491), -16.51, 140 ));
 	cameraTrail.push_back(new trailNode(Vector3(2004, 336.95, 3040), -4.68, 115));
 	cameraTrail.push_back(new trailNode(Vector3(2147, 3791, 6666), -75.72, 182));
 	cameraTrail.push_back(new trailNode(Vector3(2104, 2059, 6991), -78.94, 189));
+	cameraTrail.push_back(new trailNode(Vector3(-17, 3446, 4242), -18.14, 268.77));
+
 	speed = 600;
 	cam->SetPosition(cameraTrail[0]->nodePos);
 	cam->SetPitch(cameraTrail[0]->pitch);
@@ -66,4 +68,12 @@ void CameraTrail::insetCamTrail(Vector3 pos, float pitch, float yaw)
 {
 	//currentNode--;
 	cameraTrail.at(currentNode+1) =  new trailNode(pos, pitch, yaw);
+}
+
+void CameraTrail::reset()
+{
+	currentNode = -1;
+	cam->SetPosition(cameraTrail[0]->nodePos);
+	cam->SetPitch(cameraTrail[0]->pitch);
+	cam->SetYaw(cameraTrail[0]->yaw);
 }

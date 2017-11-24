@@ -123,6 +123,16 @@ Mesh * Mesh::GenerateQuad()
 	return m;
 }
 
+Mesh * Mesh::GeneratePoint()
+{
+	Mesh* m = new Mesh();
+	m->numVertices = 1;
+	m->type = GL_POINT;
+
+	m->vertices = new Vector3[m->numVertices];
+	m->vertices[0] = Vector3(0.5f, 0.5f, 0.5f);
+}
+
 void Mesh::BufferData()
 {
 	//bind this meshes array object, now any vertex array functionality will be performed on the newly bund array object

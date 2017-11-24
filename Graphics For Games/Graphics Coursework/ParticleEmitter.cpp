@@ -38,6 +38,7 @@ void ParticleEmitter::renderParticles()
 
 	Matrix4 tempView = renderer->getCam().BuildViewMatrixNoRotation();
 
+	
 	for each(Particle * p in particles) {
 		glUniformMatrix4fv(glGetUniformLocation(renderer->GetCurrentShader()->GetProgram(), "modelViewMatrix"), 1, false, (float*)&particleModelView(*p));
 		//glUniformMatrix4fv(glGetUniformLocation(renderer->GetCurrentShader()->GetProgram(), "viewMatrix"), 1, false, (float*)&tempView);

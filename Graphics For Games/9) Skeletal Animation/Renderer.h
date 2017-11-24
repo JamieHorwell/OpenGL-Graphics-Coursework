@@ -17,5 +17,7 @@ protected:
 	MD5FileData*hellData;
 	MD5Node*	hellNode;
 	Camera*		camera;
+
+	float time = 0;
 };
 

@@ -12,7 +12,9 @@
 #include "CameraTrail.h"
 #include "shadowManager.h"
 #include "PostProcessing.h"
-
+#include "../../nclgl/OBJMesh.h"
+#include "../../nclgl/MD5Mesh.h"
+#include "../../nclgl/MD5Node.h"
 
 enum class SceneRender { Scene1, Scene2, Scene3 };
 
@@ -29,7 +31,7 @@ public:
 	void RenderScene1(bool renderPortal, bool shadowPersp = false);
 	void RenderScene2(bool renderPortal, bool shadowPersp = false);
 	void RenderScene3();
-	void renderPlanet();
+	
 
 
 	ResourceManager* getResources() { return &resources; };
@@ -101,6 +103,32 @@ protected:
 	Portal* portal;
 
 	//Scene3
+	void FillBuffers();
+	void DrawPointLights();
+	void CombineBuffers();
+
+	void GenerateScreenTexture(GLuint &into, bool depth = false);
+	void initScene3();
+
+	Shader* sceneShader;
+	Shader* pointLightShader;
+	Shader* combineShader;
+	Light* pointLights;
+	float rotation;
+
+	GLuint bufferFBO;
+	GLuint bufferColourTex;
+	GLuint bufferNormalTex;
+	GLuint bufferDepthTex;
+
+	GLuint pointLightFBO;
+	GLuint lightEmissiveTex;
+	GLuint lightSpecularTex;
+	int LIGHTNUM = 8;
+	MD5FileData* hellData;
+	MD5Node*	 hellNode;
+
+	void resetScene3();
 
 
 
@@ -115,4 +143,11 @@ protected:
 	bool postProcess;
 	bool postProcessPass;
 	PostProcessing* postProcesser;
+	
+	Mesh* dfQuad;
+	Mesh* scene3Map;
+	OBJMesh* sphere;
+
+	bool useCamTrail = true;
+
 };

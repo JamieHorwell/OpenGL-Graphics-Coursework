@@ -12,6 +12,8 @@ uniform vec3 cameraPos;
 uniform float lightRadius;
 
 
+uniform bool useFaceNorm;
+
 in Vertex {
 	vec4 colour;
 	vec4 clipSpace;
@@ -24,6 +26,12 @@ out vec4 FragColor;
 
 void main(void){
 
+	vec3 finalNorm = vec3(0,1,0);
+	if(useFaceNorm) {
+		finalNorm = IN.normal;
+	}
+	finalNorm = IN.normal;
+
 	//// REFLECTION/REFRACION /////////
 
 	vec2 ndc = (IN.clipSpace.xy/IN.clipSpace.w)/2.0 + 0.5;
@@ -34,7 +42,7 @@ void main(void){
 	vec4 refraction = texture(refractionTex, refractTexCoord);
 	
 	vec3 view = normalize(IN.toCam);
-	float refractFactor = dot(view, IN.normal);
+	float refractFactor = dot(view, finalNorm);
 	refractFactor = pow(refractFactor, 2.0);
 	
 	vec4 finalwater = mix(vec4(0,0.1,1,1),mix(reflection, refraction, refractFactor),0.9);
@@ -43,24 +51,26 @@ void main(void){
 	
 	
 	
+	
+	
 	vec3 incident = normalize(IN.worldPos - cameraPos);
-	float lambert = max(0.0 , dot ( incident , IN.normal ));
+	float lambert = max(0.0 , dot ( incident , finalNorm ));
 	float dist = length(lightPos - IN.worldPos);
 	float atten = 1.0 - clamp(dist / lightRadius, 0.2,1.0);
 	
 	vec3 viewDir = normalize( cameraPos - IN.worldPos );
 	vec3 halfDir = normalize( incident + viewDir );
 
-	float rFactor = max ( dot( halfDir , IN.normal ), 0.0);
+	float rFactor = max ( dot( halfDir , finalNorm ), 0.0);
 	float sFactor = pow ( rFactor , 2000.0 );
 	
-	vec4 specHighlights = lightColour * sFactor * rFactor;
+	
 	
  vec3 colour = ( finalwater.rgb * finalwater.rgb );
  //colour += ( finalwater.rgb * sFactor ) * 0.75;
  FragColor = vec4 ( colour * atten * lambert , finalwater.a );
  FragColor.rgb += ( finalwater.rgb * finalwater.rgb ) * 0.8;
- FragColor.rgb += specHighlights.rgb * 100;	
+ 
 	
 	//FragColor = (lightColour*finalwater*atten);
 	//FragColor.a = 1;

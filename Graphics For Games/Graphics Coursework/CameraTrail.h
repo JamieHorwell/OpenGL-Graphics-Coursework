@@ -23,6 +23,7 @@ public:
 
 	void insetCamTrail(Vector3 pos, float pitch, float yaw);
 
+	void reset();
 protected:
 	Camera* cam;
 

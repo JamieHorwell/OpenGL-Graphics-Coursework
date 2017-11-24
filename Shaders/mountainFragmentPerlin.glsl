@@ -13,6 +13,8 @@
  uniform vec3 lightPos;
  uniform float lightRadius;
 
+ uniform float time;
+ 
  in Vertex {
  vec3 colour;
  vec2 texCoord;
@@ -42,7 +44,7 @@ diffuse2 = texture (topTex, IN.texCoord);
 bump1 = texture(diffuseTexBump, IN.texCoord);
 bump2 = texture(topTexBump, IN.texCoord);
 
-float yValue = (IN.worldPos.y - 700 + (IN.noise* 800)) / 300;
+float yValue = (IN.worldPos.y - (2000) + time + (IN.noise* 800)) / 300;
 yValue = clamp(yValue, 0.0, 1.0);
 
 diffuse = mix(diffuse1,diffuse2,yValue);

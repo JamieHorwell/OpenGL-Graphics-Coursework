@@ -6,6 +6,8 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
 uniform mat4 textureMatrix;
+uniform mat4 shadowMatrix;
+
 
 uniform vec4 clippingPlane; 
 
@@ -90,7 +92,7 @@ void main(void)	{
 	OUT.tangent = normalize(normalMatrix * normalize(tangent));
 	OUT.binormal = normalize(normalMatrix * normalize(cross(normal,tangent)));
 	OUT.worldPos = (modelMatrix * vec4(position,1)).xyz;
-	OUT.shadowProj = (textureMatrix * vec4(position+(normal*1.5),1));
+	OUT.shadowProj = (shadowMatrix * vec4(position+(normal*1.5),1));
 	//clipping out vertexes
 	gl_ClipDistance[0] = dot((modelMatrix * vec4(position,1)),clippingPlane);
 	gl_Position = finalPos;
